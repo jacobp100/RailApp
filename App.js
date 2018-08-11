@@ -3,7 +3,7 @@ import { Platform, StyleSheet, Text, View, NativeModules } from "react-native";
 import Input from "./src/Input";
 
 const styles = StyleSheet.create({
-  container: {
+  flexContainer: {
     flex: 1,
     backgroundColor: "white"
   }
