@@ -1,11 +1,42 @@
-#import "RouteReader.h"
-#import "Types.pbobjc.h"
+#import <compression.h>
 #import <React/RCTViewManager.h>
 #import <React/RCTUtils.h>
+#import "NSData+LAMCompression.h"
+#import "RouteReader.h"
+#import "Types.pbobjc.h"
 
 @implementation RouteReader
+{
+  Data * _Nullable dataCache;
+}
 
 RCT_EXPORT_MODULE()
+
+- (Data *)getData {
+  if (dataCache != nil) {
+    return dataCache;
+  }
+
+  NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+  NSString *file = [bundle pathForResource:@"ttisf989" ofType:@"pr.lzfse"];
+
+  if (file == nil) {
+    return nil;
+  }
+
+  NSData *compressedData = [NSData dataWithContentsOfFile:[file stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+  NSData *scheduleData = [compressedData lam_uncompressedDataUsingCompression:LAMCompressionLZFSE];
+
+  NSError *error = nil;
+  Data *data = [Data parseFromData:scheduleData error:&error];
+
+  if (error != nil) {
+    return nil;
+  }
+
+  dataCache = data;
+  return data;
+}
 
 - (NSDictionary *)encodeStop:(Data_Route_Stop *)stop {
   return @{
@@ -28,21 +59,10 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
-  NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-  NSString *file = [bundle pathForResource:@"ttisf989" ofType:@"pr"];
+  Data *data = [self getData];
 
-  if (file == nil) {
-    reject(@"no_file", @"No file", nil);
-    return;
-  }
-
-  NSData *fileData = [NSData dataWithContentsOfFile:[file stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-
-  NSError *error = nil;
-  Data *data = [Data parseFromData:fileData error:&error];
-
-  if (error != nil) {
-    reject(@"parse_error", @"Parse error", error);
+  if (data == nil) {
+    reject(@"timetable_error", @"Could not load timetable", nil);
     return;
   }
 
