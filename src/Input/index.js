@@ -95,12 +95,19 @@ export default class Input extends React.Component {
     ]
   };
 
-  pressed = Animated.spring(this.rotate, { toValue: 30 });
-  unpressed = Animated.spring(this.rotate, { toValue: 0 });
+  pressed = Animated.spring(this.rotate, {
+    toValue: 30,
+    useNativeDriver: true
+  });
+  unpressed = Animated.spring(this.rotate, {
+    toValue: 0,
+    useNativeDriver: true
+  });
   spin = Animated.timing(this.rotate, {
     toValue: 180,
     easing: Easing.quad,
-    duration: 250
+    duration: 250,
+    useNativeDriver: true
   });
 
   onPressIn = () => this.pressed.start();
