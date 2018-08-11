@@ -38,10 +38,18 @@ export default class App extends Component {
 
   render() {
     const { from, to, results } = this.state;
+    console.warn("ur mum bruv " + results.length);
     return (
       <View style={styles.container}>
         <Input from={from} to={to} onSwitch={this.switch} />
-        <Result from={from} to={to} departureTime="17:23" arrivalTime="17:35" />
+        {results.map(result => (
+          <Result
+            from={result}
+            to={to}
+            departureTime={route.departureTime}
+            arrivalTime={route.arrivalTime}
+          />
+        ))}
       </View>
     );
   }
