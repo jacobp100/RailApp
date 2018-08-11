@@ -1,52 +1,44 @@
 import React, { Component } from "react";
 import { Platform, StyleSheet, Text, View, NativeModules } from "react-native";
-
-const instructions = Platform.select({
-  ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
-  android:
-    "Double tap R on your keyboard to reload,\n" +
-    "Shake or press menu button for dev menu"
-});
+import Input from "./src/Input";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF"
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: "center",
-    margin: 10
-  },
-  instructions: {
-    textAlign: "center",
-    color: "#333333",
-    marginBottom: 5
+    backgroundColor: "white"
   }
 });
 
 export default class App extends Component {
+  state = {
+    from: "London Waterloo",
+    to: "Surbiton"
+  };
+
+  switch = () =>
+    this.setState(s => ({
+      to: s.from,
+      from: s.to
+    }));
+
   componentDidMount() {
-    NativeModules.RouteReader.getData({
-      day: 1 << 6,
-      date: 159,
-      startStation: 2359,
-      endStation: 2201,
-      startTime: 17 * 60,
-      endTime: 18 * 60
-    }).then(v => {
-      console.warn(v);
-    });
+    // NativeModules.RouteReader.getData({
+    //   day: 1 << 6,
+    //   date: 159,
+    //   startStation: 2359,
+    //   endStation: 2201,
+    //   startTime: 17 * 60,
+    //   endTime: 18 * 60
+    // }).then(v => {
+    //   console.warn(v);
+    // });
   }
 
   render() {
+    const { from, to } = this.state;
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
+        <Input from={from} to={to} onSwitch={this.switch} />
       </View>
     );
   }
