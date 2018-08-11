@@ -27,7 +27,6 @@
 		16EA3559211F1B8700ECB039 /* ttisf989.pr.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 16EA3558211F1B7900ECB039 /* ttisf989.pr.lzfse */; };
 		16EA355C211F21B700ECB039 /* NSData+LAMCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 16EA355B211F21B700ECB039 /* NSData+LAMCompression.m */; };
 		16EA355F211F22D900ECB039 /* libcompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 16EA355D211F22D900ECB039 /* libcompression.tbd */; };
-		16EA3560211F22D900ECB039 /* libParallelCompression.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 16EA355E211F22D900ECB039 /* libParallelCompression.tbd */; };
 		2D02E4BC1E0B4A80006451C7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -378,7 +377,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				16EA355F211F22D900ECB039 /* libcompression.tbd in Frameworks */,
-				16EA3560211F22D900ECB039 /* libParallelCompression.tbd in Frameworks */,
 				ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */,
 				5E9157361DD0AC6A00FF2AA8 /* libRCTAnimation.a in Frameworks */,
 				146834051AC3E58100842450 /* libReact.a in Frameworks */,

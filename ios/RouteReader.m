@@ -41,8 +41,9 @@ RCT_EXPORT_MODULE()
 - (NSDictionary *)encodeStop:(Data_Route_Stop *)stop {
   return @{
            @"stationId": @(stop.stationId),
-           @"arrival": @(stop.arrival),
-           @"departure": @(stop.departure),
+           @"arrivalTime": @(stop.arrivalTime),
+           @"departureTime": @(stop.departureTime),
+           @"platform": stop.platform,
            };
 }
 
@@ -53,7 +54,10 @@ RCT_EXPORT_MODULE()
   }];
   return @{
            @"id": route.id_p,
-           @"stops": stops
+           @"operatingDays": @(route.operatingDays),
+           @"dateFrom": @(route.dateFrom),
+           @"dateTo": @(route.dateTo),
+           @"stops": stops,
            };
 }
 
@@ -82,9 +86,9 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
     Data_Route *route = routes[routeIndex];
 
     if (
-        route.days & day &&
-        route.from <= date &&
-        route.to >= date &&
+        route.operatingDays & day &&
+        route.dateFrom <= date &&
+        route.dateTo >= date &&
         ![addedRouteIds containsObject:route.id_p]
     ) {
       [addedRouteIds addObject:route.id_p];
@@ -97,10 +101,7 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
         if (fromId == endStation) {
           break;
         } else if (fromId == startStation) {
-          if (
-              route.stopsArray[i].departure >= startTime &&
-              route.stopsArray[i].departure >= endTime
-          ) {
+          if (from.departureTime >= startTime && from.departureTime >= endTime) {
             i += 1;
             for (; i < count; i += 1) {
               Data_Route_Stop *to = route.stopsArray[i];
@@ -108,12 +109,15 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
               if (toId == endStation) {
                 id json = @{
                             @"routeIndex": @(routeIndex),
-                            @"departs": @(from.departure),
-                            @"arrives": @(to.arrival)
+                            @"departureTime": @(from.departureTime),
+                            @"arrivalTime": @(to.arrivalTime),
+                            @"departurePlatform": from.platform,
+                            @"arrivalPlatform": to.platform,
                             };
                 [routesJson addObject:json];
               }
             }
+            break;
           }
         }
       }
@@ -121,6 +125,18 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
   }
 
   resolve(routesJson);
+}
+
+RCT_EXPORT_METHOD(getRoute:(NSInteger)index resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+  Data *data = [self getData];
+
+  if (data == nil) {
+    reject(@"timetable_error", @"Could not load timetable", nil);
+    return;
+  }
+
+  resolve([self encodeRoute:data.routesArray[index]]);
 }
 
 @end
