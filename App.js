@@ -29,7 +29,14 @@ const styles = StyleSheet.create({
 
 export default class App extends Component {
   componentDidMount() {
-    NativeModules.RouteReader.getData("HELLO").then(v => {
+    NativeModules.RouteReader.getData({
+      day: 1 << 6,
+      date: 159,
+      startStation: 2359,
+      endStation: 2201,
+      startTime: 17 * 60,
+      endTime: 18 * 60
+    }).then(v => {
       console.warn(v);
     });
   }

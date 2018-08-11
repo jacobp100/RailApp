@@ -1,4 +1,5 @@
 #import "RouteReader.h"
+#import "Types.pbobjc.h"
 #import <React/RCTViewManager.h>
 #import <React/RCTUtils.h>
 
@@ -6,41 +7,100 @@
 
 RCT_EXPORT_MODULE()
 
-RCT_EXPORT_METHOD(getData:(NSString*)uri resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+- (NSDictionary *)encodeStop:(Data_Route_Stop *)stop {
+  return @{
+           @"stationId": @(stop.stationId),
+           @"arrival": @(stop.arrival),
+           @"departure": @(stop.departure),
+           };
+}
+
+- (NSDictionary *)encodeRoute:(Data_Route *)route {
+  NSMutableArray *stops = [NSMutableArray array];
+  [route.stopsArray enumerateObjectsUsingBlock:^(Data_Route_Stop *obj, NSUInteger idx, BOOL *stop) {
+    [stops addObject:[self encodeStop:obj]];
+  }];
+  return @{
+           @"id": route.id_p,
+           @"stops": stops
+           };
+}
+
+RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
   NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-  NSString *file = [bundle pathForResource:@"ttisf989" ofType:@"ui64"];
+  NSString *file = [bundle pathForResource:@"ttisf989" ofType:@"pr"];
 
   if (file == nil) {
     reject(@"no_file", @"No file", nil);
     return;
   }
 
-  NSData *data = [NSData dataWithContentsOfFile:[file stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+  NSData *fileData = [NSData dataWithContentsOfFile:[file stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
-  unsigned long long *bytes = (unsigned long long *)[data bytes];
-  NSUInteger length = [data length] / sizeof(bytes);
-  int i = 0;
-//  while (i < length) {
-//    
-//  }
+  NSError *error = nil;
+  Data *data = [Data parseFromData:fileData error:&error];
 
-  NSDictionary* res = @[
-                        @{
-                        @"from": @"London Waterloo",
-                        @"to": @"Surbiton",
-                        @"start": @(300),
-                        @"end": @(320),
-                        },
-                        @{
-                          @"from": @"London Waterloo",
-                          @"to": @"Surbiton",
-                          @"start": @(600),
-                          @"end": @(620),
-                          }
-                        ];
+  if (error != nil) {
+    reject(@"parse_error", @"Parse error", error);
+    return;
+  }
 
-  resolve(res);
+  NSInteger day = [[options valueForKey:@"day"] integerValue];
+  NSInteger date = [[options valueForKey:@"date"] integerValue];
+  NSInteger startStation = [[options valueForKey:@"startStation"] integerValue];
+  NSInteger endStation = [[options valueForKey:@"endStation"] integerValue];
+  NSInteger startTime = [[options valueForKey:@"startTime"] integerValue];
+  NSInteger endTime = [[options valueForKey:@"endTime"] integerValue];
+
+  NSArray<Data_Route *> *routes = data.routesArray;
+  NSInteger routesCount = [routes count];
+
+  NSMutableArray *routesJson = [NSMutableArray array];
+  NSMutableSet *addedRouteIds = [NSMutableSet set];
+  for (NSInteger routeIndex = 0; routeIndex < routesCount; routeIndex += 1) {
+    Data_Route *route = routes[routeIndex];
+
+    if (
+        route.days & day &&
+        route.from <= date &&
+        route.to >= date &&
+        ![addedRouteIds containsObject:route.id_p]
+    ) {
+      [addedRouteIds addObject:route.id_p];
+
+      NSInteger i = 0;
+      NSInteger count = route.stopsArray.count;
+      for (; i < count; i += 1) {
+        Data_Route_Stop *from = route.stopsArray[i];
+        NSInteger fromId = from.stationId;
+        if (fromId == endStation) {
+          break;
+        } else if (fromId == startStation) {
+          if (
+              route.stopsArray[i].departure >= startTime &&
+              route.stopsArray[i].departure >= endTime
+          ) {
+            i += 1;
+            for (; i < count; i += 1) {
+              Data_Route_Stop *to = route.stopsArray[i];
+              NSInteger toId = to.stationId;
+              if (toId == endStation) {
+                id json = @{
+                            @"routeIndex": @(routeIndex),
+                            @"departs": @(from.departure),
+                            @"arrives": @(to.arrival)
+                            };
+                [routesJson addObject:json];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  resolve(routesJson);
 }
 
 @end
