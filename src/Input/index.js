@@ -11,20 +11,15 @@ import {
 } from "react-native";
 import Layout from "./Layout";
 
-const inputHeight = 38;
-const inputSeparation = 1; // StyleSheet.hairlineWidth;
-
 const inputLayout = {
   height: 38,
-  marginBottom: inputSeparation
+  marginBottom: 1
 };
 
 const inputMask = {
   backgroundColor: "black",
   borderRadius: 3
 };
-
-const height = (inputLayout.height + inputLayout.marginBottom) * 2;
 
 const baseStyles = StyleSheet.create({
   container: {
