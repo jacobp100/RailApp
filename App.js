@@ -1,37 +1,44 @@
 import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
-import Result from "./src/Result";
-
-const instructions = Platform.select({
-  ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
-  android:
-    "Double tap R on your keyboard to reload,\n" +
-    "Shake or press menu button for dev menu"
-});
+import { Platform, StyleSheet, Text, View, NativeModules } from "react-native";
+import Input from "./src/Input";
 
 const styles = StyleSheet.create({
   flexContainer: {
     flex: 1,
-    paddingTop: 50
+    backgroundColor: "white"
   }
 });
 
 export default class App extends Component {
+  state = {
+    from: "London Waterloo",
+    to: "Surbiton"
+  };
+
+  switch = () =>
+    this.setState(s => ({
+      to: s.from,
+      from: s.to
+    }));
+
+  componentDidMount() {
+    // NativeModules.RouteReader.getData({
+    //   day: 1 << 6,
+    //   date: 159,
+    //   startStation: 2359,
+    //   endStation: 2201,
+    //   startTime: 17 * 60,
+    //   endTime: 18 * 60
+    // }).then(v => {
+    //   console.warn(v);
+    // });
+  }
+
   render() {
+    const { from, to } = this.state;
     return (
-      <View style={styles.flexContainer}>
-        <Result
-          from="London Waterloo"
-          to="Surbiton"
-          departureTime="17:23"
-          arrivalTime="17:39"
-        />
-        <Result
-          from="Maida Vale"
-          to="Bakerloo"
-          departureTime="18:49"
-          arrivalTime="19:11"
-        />
+      <View style={styles.container}>
+        <Input from={from} to={to} onSwitch={this.switch} />
       </View>
     );
   }
