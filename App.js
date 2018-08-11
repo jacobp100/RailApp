@@ -32,22 +32,21 @@ export default class App extends Component {
       startTime: 17 * 60,
       endTime: 18 * 60
     }).then(results => {
-      this.setState(results);
+      this.setState({ results });
     });
   }
 
   render() {
-    const { from, to, results } = this.state;
-    console.warn("ur mum bruv " + results.length);
+    const {from, to, results} = this.state;
     return (
       <View style={styles.container}>
-        <Input from={from} to={to} onSwitch={this.switch} />
+        <Input from={from} to={to} onSwitch={this.switch}/>
         {results.map(result => (
           <Result
-            from={result}
+            from={from}
             to={to}
-            departureTime={route.departureTime}
-            arrivalTime={route.arrivalTime}
+            departureTime={result.departureTime}
+            arrivalTime={result.arrivalTime}
           />
         ))}
       </View>
