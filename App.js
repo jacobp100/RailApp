@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Platform, StyleSheet, Text, View, NativeModules } from "react-native";
 import Input from "./src/Input";
+import Result from "./src/Result";
 
 const styles = StyleSheet.create({
   flexContainer: {
@@ -39,6 +40,7 @@ export default class App extends Component {
     return (
       <View style={styles.container}>
         <Input from={from} to={to} onSwitch={this.switch} />
+        <Result from={from} to={to} departureTime="17:23" arrivalTime="17:35" />
       </View>
     );
   }
