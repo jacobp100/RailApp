@@ -56,8 +56,8 @@ export default class App extends Component {
           <Result
             from={from}
             to={to}
-            departureTime={route.departureTime}
-            arrivalTime={route.arrivalTime}
+            departureTime={result.departureTime}
+            arrivalTime={result.arrivalTime}
           />
         ))}
         <DatePickerModal
