@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View, NativeModules } from "react-native";
+import { Text, View, Button, StyleSheet, NativeModules } from "react-native";
 import Input from "./src/Input";
 import Result from "./src/Result";
+import DatePickerModal from "./src/DatePickerModal";
 
 const styles = StyleSheet.create({
   flexContainer: {
@@ -15,6 +16,15 @@ export default class App extends Component {
     from: "London Waterloo",
     to: "Surbiton",
     results: []
+  };
+
+  datePicker = React.createRef();
+  showDatePicker = () => {
+    this.datePicker.current
+      .open({
+        date: new Date()
+      })
+      .then(date => console.warn(date.toString()), () => {});
   };
 
   switch = () =>
@@ -32,24 +42,29 @@ export default class App extends Component {
       startTime: 17 * 60,
       endTime: 18 * 60
     }).then(results => {
-      this.setState(results);
+      this.setState({ results });
     });
   }
 
   render() {
     const { from, to, results } = this.state;
-    console.warn("ur mum bruv " + results.length);
     return (
       <View style={styles.container}>
         <Input from={from} to={to} onSwitch={this.switch} />
-        {results.map(result => (
+        <Button title="Today" onPress={this.showDatePicker} />
+        {results.map(route => (
           <Result
-            from={result}
+            from={from}
             to={to}
             departureTime={route.departureTime}
             arrivalTime={route.arrivalTime}
           />
         ))}
+        <DatePickerModal
+          ref={this.datePicker}
+          mode="datetime"
+          minuteInterval={5}
+        />
       </View>
     );
   }
