@@ -2,7 +2,14 @@ import React, { Component } from "react";
 import { TextInput } from "react-native";
 
 export default class Input extends Component {
+  input = React.createRef();
   state = { input: "" };
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.active && !this.props.active) {
+      this.input.current.blur();
+    }
+  }
 
   onChangeText = input => {
     this.setState({ input });

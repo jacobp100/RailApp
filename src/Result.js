@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
+import { formatTimeString, formatDurationString } from "./util";
 
 const styles = StyleSheet.create({
   container: {
@@ -38,20 +39,6 @@ const styles = StyleSheet.create({
   }
 });
 
-const formatTime = minuesPastMidnight => {
-  const hours = String(Math.floor(minuesPastMidnight / 60)).padStart(2, "0");
-  const minutes = String(minuesPastMidnight % 60).padStart(2, "0");
-  return hours + ":" + minutes;
-};
-
-const formatDuration = (departureTime, arrivalTime) => {
-  let journeyTime = arrivalTime - departureTime;
-  if (journeyTime < 0) {
-    journeyTime = formatDuration(departureTime, arrivalTime + 60 * 24);
-  }
-  return journeyTime;
-};
-
 export default ({
   to,
   from,
@@ -62,7 +49,7 @@ export default ({
 }) => (
   <View style={styles.container}>
     <View style={styles.rowContainer}>
-      <Text style={styles.time}>{formatTime(departureTime)}</Text>
+      <Text style={styles.time}>{formatTimeString(departureTime)}</Text>
       <View style={styles.locationPlatformContainer}>
         <Text>{from}</Text>
         <Text style={styles.platform}>
@@ -73,13 +60,13 @@ export default ({
       </View>
       <View style={styles.journetTimeContainer}>
         <Text style={styles.journeyTimeValue}>
-          {formatDuration(departureTime, arrivalTime)}
+          {formatDurationString(departureTime, arrivalTime)}
         </Text>
         <Text style={styles.journeyTimeUnit}>MIN</Text>
       </View>
     </View>
     <View style={styles.rowContainer}>
-      <Text style={styles.time}>{formatTime(arrivalTime)}</Text>
+      <Text style={styles.time}>{formatTimeString(arrivalTime)}</Text>
       <View style={styles.locationPlatformContainer}>
         <Text>{to}</Text>
         <Text style={styles.platform}>

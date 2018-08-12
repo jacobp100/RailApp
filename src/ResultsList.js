@@ -1,17 +1,18 @@
 import React, { Component } from "react";
 import {
-  Text,
   View,
-  Button,
-  FlatList,
+  Text,
+  SectionList,
   ActivityIndicator,
   StyleSheet,
   NativeModules
 } from "react-native";
 import { sortBy } from "lodash/fp";
-import Result from "./Result";
-import ResultSeparator from "./ResultSeparator";
 import stations from "../stations.json";
+import Result from "./Result";
+import EmptyList from "./EmptyList";
+import ResultSeparator from "./ResultSeparator";
+import { getDate, formatDate, formatTime } from "./util";
 
 const resultsList = StyleSheet.create({
   spinner: {
@@ -19,42 +20,118 @@ const resultsList = StyleSheet.create({
   }
 });
 
-const noResults = StyleSheet.create({
+const header = StyleSheet.create({
   container: {
-    paddingHorizontal: 36,
-    paddingVertical: 48
+    backgroundColor: "white",
+    paddingHorizontal: 12,
+    paddingVertical: 6
   },
   title: {
-    marginBottom: 12,
-    textAlign: "center",
-    color: "#8C8C8C",
-    fontSize: 18
-  },
-  body: {
-    textAlign: "center",
-    color: "#8C8C8C",
-    fontSize: 12
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#BABABA"
   }
 });
 
 const NoResults = () => (
-  <View style={noResults.container}>
-    <Text style={noResults.title}>No Results</Text>
-    <Text style={noResults.body}>
-      We only show direct journeys between stations
-    </Text>
-  </View>
+  <EmptyList
+    title="No Results"
+    body="We can only show direct journeys without changes"
+  />
 );
 
+const dates = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC"
+];
+
+const resultFor = async (from, to, { date, startTime, endTime }) => {
+  const day = (getDate(date).getDay() + 1) % 7;
+  const unsortedResults = await NativeModules.RouteReader.getData({
+    day,
+    date,
+    startStation: from,
+    endStation: to,
+    startTime,
+    endTime
+  });
+
+  const results = sortBy(["departureTime", "arrivalTime"], unsortedResults);
+
+  return { date, data: results };
+};
+
+const resultsFor = async (from, to, date) => {
+  const MINUTES_BEFORE = 30;
+  const MINUTES_AFTER = 90;
+  const baseDate = formatDate(date);
+  const baseTime = formatTime(date);
+
+  const promiseData = [];
+
+  const DAY = 24 * 60;
+
+  let dateBefore = baseDate;
+  let remainingTimeBefore = baseTime - MINUTES_BEFORE;
+  let dateAfter = baseDate;
+  let remainingTimeAfter = baseTime + MINUTES_AFTER;
+
+  while (remainingTimeBefore < 0) {
+    dateBefore -= 1;
+    remainingTimeBefore += DAY;
+    promiseData.push({
+      date: dateBefore,
+      startTime: Math.max(0, remainingTimeBefore),
+      endTime: DAY
+    });
+  }
+
+  promiseData.push({
+    date: baseDate,
+    startTime: Math.max(0, remainingTimeBefore),
+    endTime: Math.min(DAY, remainingTimeAfter)
+  });
+
+  while (remainingTimeAfter > DAY) {
+    dateAfter += 1;
+    remainingTimeAfter -= DAY;
+    promiseData.push({
+      date: dateAfter,
+      startTime: 0,
+      endTime: Math.min(DAY, remainingTimeAfter)
+    });
+  }
+
+  const promises = promiseData.map(p => resultFor(from, to, p));
+  const results = await Promise.all(promises);
+  return results;
+};
+
 export default class ResultsList extends Component {
-  static getDerivedStateFromProps({ to, from }, state) {
-    if (to !== state.to || from !== state.from) {
-      return { to, from, results: null, placeholderResults: state.results };
+  static getDerivedStateFromProps({ to, from, date }, state) {
+    if (to !== state.to || from !== state.from || date !== state.date) {
+      return {
+        to,
+        from,
+        date,
+        results: null,
+        placeholderResults: state.results
+      };
     }
     return null;
   }
 
-  constructor({ to, from }) {
+  constructor({ to, from, date }) {
     super();
     /*
     Placeholder results is used to freeze when updating results.
@@ -65,7 +142,7 @@ export default class ResultsList extends Component {
     a spinner.
     This makes it appear quicker to the user.
     */
-    this.state = { to, from, results: null, placeholderResults: null };
+    this.state = { to, from, date, results: null, placeholderResults: null };
   }
 
   componentDidMount() {
@@ -102,31 +179,20 @@ export default class ResultsList extends Component {
 
   fetchPromise = Promise.resolve();
   fetchResultsIfNeeded() {
-    if (this.state.results == null) {
-      const { to, from } = this.state;
-      this.fetchPromise = this.fetchPromise
-        .then(() => {
-          return NativeModules.RouteReader.getData({
-            day: 1 << 6,
-            date: 159,
-            startStation: from,
-            endStation: to,
-            startTime: 17 * 60,
-            endTime: 18 * 60
-          });
-        })
-        .then(unsortedResults => {
-          if (this.unmounted) return;
-          this.setState(s => {
-            if (s.to !== to || s.from !== from) return null;
-            const results = sortBy(
-              ["departureTime", "arrivalTime"],
-              unsortedResults
-            );
-            return { results, placeholderResults: null };
-          });
-        });
-    }
+    if (this.state.results != null) return;
+    const { to, from, date } = this.state;
+
+    this.fetchPromise = this.fetchPromise.then(async () => {
+      const results = await resultsFor(from, to, date);
+
+      this.setState(s => {
+        if (s.to !== to || s.from !== from || s.date !== date) {
+          return null;
+        }
+
+        return { results, placeholderResults: null };
+      });
+    });
   }
 
   keyExtractor = (key, index) => String(index);
@@ -142,6 +208,17 @@ export default class ResultsList extends Component {
     />
   );
 
+  renderSectionHeader = ({ section }) => {
+    const date = getDate(section.date);
+    return (
+      <View style={header.container}>
+        <Text style={header.title}>
+          {date.getDate()} {dates[date.getMonth()]} {date.getFullYear()}
+        </Text>
+      </View>
+    );
+  };
+
   getItemLayout = (data, index) => ({
     length: 80,
     offset: (80 + StyleSheet.hairlineWidth) * index,
@@ -151,9 +228,10 @@ export default class ResultsList extends Component {
   render() {
     const results = this.state.results || this.state.placeholderResults;
     return results != null ? (
-      <FlatList
-        data={results}
+      <SectionList
+        sections={results}
         keyExtractor={this.keyExtractor}
+        renderSectionHeader={this.renderSectionHeader}
         renderItem={this.renderItem}
         ItemSeparatorComponent={ResultSeparator}
         ListEmptyComponent={NoResults}

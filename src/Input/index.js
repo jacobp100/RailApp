@@ -95,7 +95,8 @@ export default class Input extends React.Component {
 
   render() {
     const { from, to, activeInput, onSetSearch } = this.props;
-    const hash = from + to + (from > to ? 1 : 0);
+    const hash =
+      from != null && to != null ? from + to + (from > to ? 1 : 0) : 0;
 
     return (
       <PlatformComponent
