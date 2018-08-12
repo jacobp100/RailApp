@@ -16,22 +16,49 @@ import stations from "../stations.json";
 export default class ResultsList extends Component {
   static getDerivedStateFromProps({ to, from }, state) {
     if (to !== state.to || from !== state.from) {
-      return { to, from, results: null };
+      return { to, from, results: null, placeholderResults: state.results };
     }
     return null;
   }
 
   constructor({ to, from }) {
     super();
-    this.state = { to, from, results: null };
+    /*
+    Placeholder results is used to freeze when updating results.
+    If we're able to get the new results within 300ms, we'll show the previous
+    results until the new ones arrive, then replace the results without showing
+    a spinner.
+    If, however, it takes longer than 300ms to deliver the results, we'll show
+    a spinner.
+    This makes it appear quicker to the user.
+    */
+    this.state = { to, from, results: null, placeholderResults: null };
   }
 
   componentDidMount() {
     this.fetchResultsIfNeeded();
   }
 
-  componentDidUpdate() {
+  clearPlaceholderResultsTimeout = null;
+  componentDidUpdate(prevProps, prevState) {
     this.fetchResultsIfNeeded();
+
+    if (
+      prevState.results != null &&
+      this.state.results == null &&
+      this.state.placeholderResults != null
+    ) {
+      const placeholderResults = this.state.placeholderResults;
+      clearTimeout(this.clearPlaceholderResultsTimeout);
+      this.clearPlaceholderResultsTimeout = setTimeout(() => {
+        this.setState(
+          s =>
+            s.placeholderResults === placeholderResults
+              ? { placeholderResults: null }
+              : null
+        );
+      }, 300);
+    }
   }
 
   fetchPromise = Promise.resolve();
@@ -56,7 +83,7 @@ export default class ResultsList extends Component {
               ["departureTime", "arrivalTime"],
               unsortedResults
             );
-            return { results };
+            return { results, placeholderResults: null };
           });
         });
     }
@@ -82,7 +109,7 @@ export default class ResultsList extends Component {
   });
 
   render() {
-    const { results } = this.state;
+    const results = this.state.results || this.state.placeholderResults;
     return results != null ? (
       <FlatList
         data={results}
