@@ -1,44 +1,33 @@
-import React, {Component} from "react";
-import {Platform, StyleSheet, Text, View} from "react-native";
-
-const instructions = Platform.select({
-  ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
-  android:
-    "Double tap R on your keyboard to reload,\n" +
-    "Shake or press menu button for dev menu"
-});
+import React, { Component } from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 9,
-    paddingHorizontal: 12
+    paddingHorizontal: 12,
+    height: 80,
+    justifyContent: "space-between"
   },
   rowContainer: {
     flexDirection: "row"
   },
   time: {
-    textAlign: "left",
-    color: "#333333",
-    marginBottom: 5,
-    paddingRight: 9,
-    fontWeight: "500"
-  },
-  location: {
-    textAlign: "left",
-    color: "#333333"
+    marginRight: 9,
+    fontWeight: "500",
+    fontVariant: ["tabular-nums"]
   },
   platform: {
-    textAlign: "left",
     color: "#BABABA",
-    marginBottom: 5,
     fontSize: 9
   },
-  journeyTimeVal: {
-    fontWeight: "900"
+  journeyTimeValue: {
+    fontWeight: "700"
   },
-  journeyTimeText: {
+  journeyTimeUnit: {
+    marginLeft: 3,
     fontWeight: "900",
-    fontSize: 10
+    fontSize: 9,
+    letterSpacing: 0.3
   },
   locationPlatformContainer: {
     flex: 1
@@ -49,45 +38,56 @@ const styles = StyleSheet.create({
   }
 });
 
-
-const timeFormatter = (minuesPastMidnight) => {
-  const hours = String(Math.floor(minuesPastMidnight / 60)).padStart(2, "0")
-  const minutes = String(minuesPastMidnight % 60).padStart(2, "0")
-  return hours + ":" + minutes
+const formatTime = minuesPastMidnight => {
+  const hours = String(Math.floor(minuesPastMidnight / 60)).padStart(2, "0");
+  const minutes = String(minuesPastMidnight % 60).padStart(2, "0");
+  return hours + ":" + minutes;
 };
 
-const calcJourneyTime = (departureTime, arrivalTime) => {
-  let journeyTime = arrivalTime - departureTime
+const formatDuration = (departureTime, arrivalTime) => {
+  let journeyTime = arrivalTime - departureTime;
   if (journeyTime < 0) {
-    journeyTime = calcJourneyTime(departureTime, arrivalTime + (60 * 24))
+    journeyTime = formatDuration(departureTime, arrivalTime + 60 * 24);
   }
-  return journeyTime
+  return journeyTime;
 };
 
-export default class App extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.rowContainer}>
-          <Text style={styles.time}>{timeFormatter(this.props.departureTime)}</Text>
-          <View style={styles.locationPlatformContainer}>
-            <Text style={styles.location}>{this.props.from}</Text>
-            <Text style={styles.platform}>Platform 9 (to be confirmed)</Text>
-          </View>
-          <View style={styles.journetTimeContainer}>
-            <Text
-              style={styles.journeyTimeVal}>{calcJourneyTime(this.props.departureTime,   this.props.arrivalTime)}</Text>
-            <Text style={styles.journeyTimeText}>MIN</Text>
-          </View>
-        </View>
-        <View style={styles.rowContainer}>
-          <Text style={styles.time}>{timeFormatter(this.props.arrivalTime)}</Text>
-          <View style={styles.locationPlatformContainer}>
-            <Text style={styles.location}>{this.props.to}</Text>
-            <Text style={styles.platform}>Platform 1 (to be confirmed)</Text>
-          </View>
-        </View>
+export default ({
+  to,
+  from,
+  departureTime,
+  arrivalTime,
+  departurePlatform,
+  arrivalPlatform
+}) => (
+  <View style={styles.container}>
+    <View style={styles.rowContainer}>
+      <Text style={styles.time}>{formatTime(departureTime)}</Text>
+      <View style={styles.locationPlatformContainer}>
+        <Text>{from}</Text>
+        <Text style={styles.platform}>
+          {departurePlatform
+            ? `Platform ${departurePlatform} (to be confirmed)`
+            : "No platform information"}
+        </Text>
       </View>
-    );
-  }
-}
+      <View style={styles.journetTimeContainer}>
+        <Text style={styles.journeyTimeValue}>
+          {formatDuration(departureTime, arrivalTime)}
+        </Text>
+        <Text style={styles.journeyTimeUnit}>MIN</Text>
+      </View>
+    </View>
+    <View style={styles.rowContainer}>
+      <Text style={styles.time}>{formatTime(arrivalTime)}</Text>
+      <View style={styles.locationPlatformContainer}>
+        <Text>{to}</Text>
+        <Text style={styles.platform}>
+          {arrivalPlatform
+            ? `Platform ${arrivalPlatform} (to be confirmed)`
+            : "No platform information"}
+        </Text>
+      </View>
+    </View>
+  </View>
+);

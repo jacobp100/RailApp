@@ -8,6 +8,7 @@ import {
   Easing,
   StyleSheet
 } from "react-native";
+import stations from "../../stations.json";
 import PlatformComponent from "./PlatformComponent";
 
 const baseInput = {
@@ -88,17 +89,13 @@ export default class Input extends React.Component {
   };
 
   render() {
-    const { from = "London Waterloo", to = "Surbiton" } = this.props;
-
-    let hash = [from, to]
-      .sort()
-      .reduce((accum, str) => accum + str.charCodeAt(0), 0);
-    if (from > to) hash += 1;
+    const { from, to } = this.props;
+    const hash = from + to + (from > to ? 1 : 0);
 
     return (
       <PlatformComponent
-        to={to}
-        from={from}
+        to={stations[to].name}
+        from={stations[from].name}
         hash={hash}
         onPress={this.onPress}
         onPressIn={this.onPressIn}

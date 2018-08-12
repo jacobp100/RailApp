@@ -82,7 +82,7 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
 
   NSMutableArray *routesJson = [NSMutableArray array];
   NSMutableSet *addedRouteIds = [NSMutableSet set];
-  for (NSInteger routeIndex = 0; routeIndex < routesCount; routeIndex += 1) {
+  for (NSInteger routeIndex = routesCount - 1; routeIndex >= 0; routeIndex -= 1) {
     Data_Route *route = routes[routeIndex];
 
     if (
@@ -101,7 +101,7 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
         if (fromId == endStation) {
           break;
         } else if (fromId == startStation) {
-          if (from.departureTime >= startTime && from.departureTime >= endTime) {
+          if (from.departureTime >= startTime && from.departureTime <= endTime) {
             i += 1;
             for (; i < count; i += 1) {
               Data_Route_Stop *to = route.stopsArray[i];
