@@ -61,6 +61,12 @@ RCT_EXPORT_MODULE()
            };
 }
 
+RCT_EXPORT_METHOD(preloadData:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+  [self getData];
+  resolve(nil);
+}
+
 RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
   Data *data = [self getData];

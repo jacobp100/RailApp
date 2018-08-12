@@ -58,7 +58,7 @@ export default class DatePickerModal extends Component {
     const { visible, date, maximumDate, minimumDate } = this.state;
 
     return (
-      <Modal transparent visible={visible}>
+      <Modal transparent visible={visible} animationType="slide">
         <View style={styles.bar}>
           <Button title="Cancel" onPress={this.cancel} />
           <Button title="Done" onPress={this.done} />

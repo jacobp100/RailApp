@@ -13,6 +13,39 @@ import Result from "./Result";
 import ResultSeparator from "./ResultSeparator";
 import stations from "../stations.json";
 
+const resultsList = StyleSheet.create({
+  spinner: {
+    flex: 1
+  }
+});
+
+const noResults = StyleSheet.create({
+  container: {
+    paddingHorizontal: 36,
+    paddingVertical: 48
+  },
+  title: {
+    marginBottom: 12,
+    textAlign: "center",
+    color: "#8C8C8C",
+    fontSize: 18
+  },
+  body: {
+    textAlign: "center",
+    color: "#8C8C8C",
+    fontSize: 12
+  }
+});
+
+const NoResults = () => (
+  <View style={noResults.container}>
+    <Text style={noResults.title}>No Results</Text>
+    <Text style={noResults.body}>
+      We only show direct journeys between stations
+    </Text>
+  </View>
+);
+
 export default class ResultsList extends Component {
   static getDerivedStateFromProps({ to, from }, state) {
     if (to !== state.to || from !== state.from) {
@@ -39,6 +72,11 @@ export default class ResultsList extends Component {
     this.fetchResultsIfNeeded();
   }
 
+  unmounted = false;
+  componentWillUnmount() {
+    this.unmounted = true;
+  }
+
   clearPlaceholderResultsTimeout = null;
   componentDidUpdate(prevProps, prevState) {
     this.fetchResultsIfNeeded();
@@ -51,6 +89,7 @@ export default class ResultsList extends Component {
       const placeholderResults = this.state.placeholderResults;
       clearTimeout(this.clearPlaceholderResultsTimeout);
       this.clearPlaceholderResultsTimeout = setTimeout(() => {
+        if (this.unmounted) return;
         this.setState(
           s =>
             s.placeholderResults === placeholderResults
@@ -77,6 +116,7 @@ export default class ResultsList extends Component {
           });
         })
         .then(unsortedResults => {
+          if (this.unmounted) return;
           this.setState(s => {
             if (s.to !== to || s.from !== from) return null;
             const results = sortBy(
@@ -116,9 +156,10 @@ export default class ResultsList extends Component {
         keyExtractor={this.keyExtractor}
         renderItem={this.renderItem}
         ItemSeparatorComponent={ResultSeparator}
+        ListEmptyComponent={NoResults}
       />
     ) : (
-      <ActivityIndicator style={{ flex: 1 }} />
+      <ActivityIndicator style={resultsList.spinner} />
     );
   }
 }

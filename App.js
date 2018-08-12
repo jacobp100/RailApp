@@ -1,15 +1,8 @@
 import React, { Component } from "react";
-import {
-  Text,
-  View,
-  Button,
-  FlatList,
-  StyleSheet,
-  NativeModules
-} from "react-native";
-import { sortBy } from "lodash/fp";
-import Input from "./src/Input";
+import { Text, View, Button, StyleSheet } from "react-native";
+import Input, { inputs } from "./src/Input";
 import ResultsList from "./src/ResultsList";
+import SearchResults from "./src/SearchResults";
 import DatePickerModal from "./src/DatePickerModal";
 
 const styles = StyleSheet.create({
@@ -21,8 +14,10 @@ const styles = StyleSheet.create({
 
 export default class App extends Component {
   state = {
-    from: 2359,
-    to: 2201
+    from: null,
+    to: null,
+    search: "",
+    activeInput: inputs.NONE
   };
 
   datePicker = React.createRef();
@@ -38,13 +33,35 @@ export default class App extends Component {
       from: s.to
     }));
 
+  setActiveInput = activeInput => this.setState({ activeInput, search: "" });
+  setSearch = search => this.setState({ search });
+  setSearchResult = id =>
+    this.setState(s => {
+      if (s.activeInput === inputs.TO) {
+        return { to: id, activeInput: inputs.NONE, search: "" };
+      } else if (s.activeInput === inputs.FROM) {
+        return { from: id, activeInput: inputs.NONE, search: "" };
+      }
+    });
+
   render() {
-    const { from, to } = this.state;
+    const { from, to, activeInput, search } = this.state;
     return (
       <View style={styles.container}>
-        <Input from={from} to={to} onSwitch={this.switch} />
+        <Input
+          from={from}
+          to={to}
+          activeInput={activeInput}
+          onSetSearch={this.setSearch}
+          onSetActiveInput={this.setActiveInput}
+          onSwitch={this.switch}
+        />
         <Button title="Today" onPress={this.showDatePicker} />
-        <ResultsList from={from} to={to} />
+        {activeInput !== inputs.NONE ? (
+          <SearchResults search={search} onSelect={this.setSearchResult} />
+        ) : from != null && to != null ? (
+          <ResultsList from={from} to={to} />
+        ) : null}
         <DatePickerModal
           ref={this.datePicker}
           mode="datetime"

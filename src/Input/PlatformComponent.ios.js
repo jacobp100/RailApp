@@ -1,14 +1,18 @@
-import React from "react";
+import React, { Component } from "react";
 import {
   View,
   Text,
   Image,
+  TextInput,
   MaskedViewIOS,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   Animated,
   StyleSheet
 } from "react-native";
 import Layout from "./Layout";
+import Input from "./Input";
+import * as inputs from "./inputs";
 
 const inputLayout = {
   height: 38,
@@ -58,9 +62,7 @@ const inputStyles = StyleSheet.create({
   input: {
     ...inputLayout,
     justifyContent: "center",
-    paddingHorizontal: 24
-  },
-  text: {
+    paddingHorizontal: 24,
     color: "white",
     fontSize: 18,
     fontWeight: "900",
@@ -81,13 +83,18 @@ const gradients = [
 ];
 
 export default ({
+  activeInput,
   to,
   from,
   hash,
   imageStyle,
-  onPress,
-  onPressIn,
-  onPressOut
+  onFromFocus,
+  onToFocus,
+  onSetSearch,
+  onClearActiveInput,
+  onSwitchPress,
+  onSwitchPressIn,
+  onSwitchPressOut
 }) => {
   const gradient = gradients[hash % gradients.length];
 
@@ -113,20 +120,32 @@ export default ({
       </MaskedViewIOS>
       <Layout
         topInput={
-          <View style={inputStyles.input}>
-            <Text style={inputStyles.text}>{from}</Text>
-          </View>
+          <Input
+            active={activeInput === inputs.FROM}
+            style={inputStyles.input}
+            value={from}
+            placeholder="From"
+            onChangeText={onSetSearch}
+            onFocus={onFromFocus}
+            onBlur={onClearActiveInput}
+          />
         }
         bottomInput={
-          <View style={inputStyles.input}>
-            <Text style={inputStyles.text}>{to}</Text>
-          </View>
+          <Input
+            active={activeInput === inputs.TO}
+            style={inputStyles.input}
+            value={to}
+            placeholder="To"
+            onChangeText={onSetSearch}
+            onFocus={onToFocus}
+            onBlur={onClearActiveInput}
+          />
         }
         attachment={
           <TouchableWithoutFeedback
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}
-            onPress={onPress}
+            onPressIn={onSwitchPressIn}
+            onPressOut={onSwitchPressOut}
+            onPress={onSwitchPress}
           >
             <View style={inputStyles.switchPlaceholder} />
           </TouchableWithoutFeedback>

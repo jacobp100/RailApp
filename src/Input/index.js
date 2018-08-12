@@ -9,6 +9,7 @@ import {
   StyleSheet
 } from "react-native";
 import stations from "../../stations.json";
+import * as inputs from "./inputs";
 import PlatformComponent from "./PlatformComponent";
 
 const baseInput = {
@@ -79,29 +80,40 @@ export default class Input extends React.Component {
     useNativeDriver: true
   });
 
-  onPressIn = () => this.pressed.start();
-  onPressOut = () => this.unpressed.start();
-  onPress = () => {
+  onSwitchPressIn = () => this.pressed.start();
+  onSwitchPressOut = () => this.unpressed.start();
+  onSwitchPress = () => {
     this.spin.start(({ finished }) => {
       if (finished) this.rotate.setValue(0);
     });
     this.props.onSwitch();
   };
 
+  onFromFocus = () => this.props.onSetActiveInput(inputs.FROM);
+  onToFocus = () => this.props.onSetActiveInput(inputs.TO);
+  onClearActiveInput = () => this.props.onSetActiveInput(inputs.NONE);
+
   render() {
-    const { from, to } = this.props;
+    const { from, to, activeInput, onSetSearch } = this.props;
     const hash = from + to + (from > to ? 1 : 0);
 
     return (
       <PlatformComponent
-        to={stations[to].name}
-        from={stations[from].name}
+        activeInput={activeInput}
+        to={to != null ? stations[to].name : ""}
+        from={from != null ? stations[from].name : ""}
         hash={hash}
-        onPress={this.onPress}
-        onPressIn={this.onPressIn}
-        onPressOut={this.onPressOut}
+        onFromFocus={this.onFromFocus}
+        onToFocus={this.onToFocus}
+        onSetSearch={onSetSearch}
+        onClearActiveInput={this.onClearActiveInput}
+        onSwitchPress={this.onSwitchPress}
+        onSwitchPressIn={this.onSwitchPressIn}
+        onSwitchPressOut={this.onSwitchPressOut}
         imageStyle={this.imageStyle}
       />
     );
   }
 }
+
+export { inputs };
