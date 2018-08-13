@@ -55,13 +55,17 @@ const dates = [
   "DEC"
 ];
 
-const resultFor = async (from, to, { date, startTime, endTime }) => {
+const resultFor = async (
+  startStation,
+  endStation,
+  { date, startTime, endTime }
+) => {
   const day = (getDate(date).getDay() + 1) % 7;
   const unsortedResults = await NativeModules.RouteReader.getData({
     day,
     date,
-    startStation: from,
-    endStation: to,
+    startStation,
+    endStation,
     startTime,
     endTime
   });
@@ -71,46 +75,28 @@ const resultFor = async (from, to, { date, startTime, endTime }) => {
   return { date, data: results };
 };
 
-const resultsFor = async (from, to, date) => {
+const mod = (n, m) => ((n % m) + m) % m;
+
+const resultsFor = async (from, to, dateObj) => {
   const MINUTES_BEFORE = 30;
   const MINUTES_AFTER = 90;
-  const baseDate = formatDate(date);
-  const baseTime = formatTime(date);
-
-  const promiseData = [];
-
   const DAY = 24 * 60;
+  const baseDate = formatDate(dateObj);
+  const baseTime = formatTime(dateObj);
 
-  let dateBefore = baseDate;
-  let remainingTimeBefore = baseTime - MINUTES_BEFORE;
-  let dateAfter = baseDate;
-  let remainingTimeAfter = baseTime + MINUTES_AFTER;
+  const dateFrom = baseDate + Math.floor((baseTime - MINUTES_BEFORE) / DAY);
+  const dateTo = baseDate + Math.ceil((baseTime + MINUTES_AFTER) / DAY) - 1;
 
-  while (remainingTimeBefore < 0) {
-    dateBefore -= 1;
-    remainingTimeBefore += DAY;
-    promiseData.push({
-      date: dateBefore,
-      startTime: Math.max(0, remainingTimeBefore),
-      endTime: DAY
-    });
-  }
+  const timeFrom = mod(baseTime - MINUTES_BEFORE, DAY);
+  const timeTo = mod(baseTime + MINUTES_AFTER, DAY);
 
-  promiseData.push({
-    date: baseDate,
-    startTime: Math.max(0, remainingTimeBefore),
-    endTime: Math.min(DAY, remainingTimeAfter)
-  });
-
-  while (remainingTimeAfter > DAY) {
-    dateAfter += 1;
-    remainingTimeAfter -= DAY;
-    promiseData.push({
-      date: dateAfter,
-      startTime: 0,
-      endTime: Math.min(DAY, remainingTimeAfter)
-    });
-  }
+  const promiseData = Array.from({ length: dateTo - dateFrom + 1 })
+    .map((_, i) => dateFrom + i)
+    .map(date => ({
+      date,
+      startTime: date === dateFrom ? timeFrom : 0,
+      endTime: date === dateTo ? timeTo : DAY
+    }));
 
   const promises = promiseData.map(p => resultFor(from, to, p));
   const results = await Promise.all(promises);
