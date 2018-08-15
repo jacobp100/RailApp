@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {
   Text,
   View,
+  Image,
   TouchableOpacity,
   StyleSheet,
   AppState
@@ -22,11 +23,14 @@ const styles = StyleSheet.create({
     top: -12,
     paddingHorizontal: 48
   },
-  datePicker: {
+  pickDate: {
     color: "#BABABA",
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 0.8
+  },
+  clear: {
+    paddingLeft: 12
   },
   hidden: {
     display: "none"
@@ -126,16 +130,18 @@ export default class App extends Component {
         />
         <View style={styles.toolbar}>
           <TouchableOpacity onPress={this.showDatePicker}>
-            <View>
-              <Text style={styles.datePicker}>
-                {customTimestamp == null ? "SET TIME" : "CUSTOM TIME SET"}
-              </Text>
-            </View>
+            <Text style={styles.pickDate}>
+              {customTimestamp == null ? "SET TIME" : "CUSTOM TIME SET"}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={this.clearCustomDate}>
-            <View style={customTimestamp != null ? styles.hidden : null}>
-              <Text style={styles.datePicker}>x</Text>
-            </View>
+            <Image
+              source={require("../assets/Close.png")}
+              style={StyleSheet.compose(
+                styles.clear,
+                customTimestamp != null && styles.hidden
+              )}
+            />
           </TouchableOpacity>
         </View>
         {activeInput !== inputs.NONE ? (
