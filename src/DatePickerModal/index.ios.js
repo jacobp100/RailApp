@@ -1,12 +1,5 @@
 import React, { Component } from "react";
-import {
-  View,
-  Text,
-  Button,
-  DatePickerIOS,
-  Modal,
-  StyleSheet
-} from "react-native";
+import { View, Button, DatePickerIOS, Modal, StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   bar: {
