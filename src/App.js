@@ -134,13 +134,13 @@ export default class App extends Component {
               {customTimestamp == null ? "SET TIME" : "CUSTOM TIME SET"}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={this.clearCustomDate}>
+          <TouchableOpacity
+            style={customTimestamp != null && styles.hidden}
+            onPress={this.clearCustomDate}
+          >
             <Image
               source={require("../assets/Close.png")}
-              style={StyleSheet.compose(
-                styles.clear,
-                customTimestamp != null && styles.hidden
-              )}
+              style={styles.clear}
             />
           </TouchableOpacity>
         </View>
