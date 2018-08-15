@@ -12,7 +12,7 @@ import stations from "../stations.json";
 import Result from "./Result";
 import EmptyList from "./EmptyList";
 import ResultSeparator from "./ResultSeparator";
-import { getDate, formatDate, formatTime } from "./util";
+import { getDate, formatDate, formatTime, monthNames } from "./util";
 
 const resultsList = StyleSheet.create({
   spinner: {
@@ -40,21 +40,6 @@ const NoResults = () => (
   />
 );
 
-const dates = [
-  "JAN",
-  "FEB",
-  "MAR",
-  "APR",
-  "MAY",
-  "JUN",
-  "JUL",
-  "AUG",
-  "SEP",
-  "OCT",
-  "NOV",
-  "DEC"
-];
-
 const resultFor = async (
   startStation,
   endStation,
@@ -77,12 +62,14 @@ const resultFor = async (
 
 const mod = (n, m) => ((n % m) + m) % m;
 
-const resultsFor = async (from, to, dateObj) => {
+const resultsFor = async (from, to, timestamp) => {
+  if (from == null || to == null || timestamp == null) return [];
+
   const MINUTES_BEFORE = 30;
   const MINUTES_AFTER = 90;
   const DAY = 24 * 60;
-  const baseDate = formatDate(dateObj);
-  const baseTime = formatTime(dateObj);
+  const baseDate = formatDate(new Date(timestamp));
+  const baseTime = formatTime(new Date(timestamp));
 
   const dateFrom = baseDate + Math.floor((baseTime - MINUTES_BEFORE) / DAY);
   const dateTo = baseDate + Math.ceil((baseTime + MINUTES_AFTER) / DAY) - 1;
@@ -104,12 +91,23 @@ const resultsFor = async (from, to, dateObj) => {
 };
 
 export default class ResultsList extends Component {
-  static getDerivedStateFromProps({ to, from, date }, state) {
-    if (to !== state.to || from !== state.from || date !== state.date) {
+  static defaultProps = {
+    cacheResultsMs: 0
+  };
+
+  static getDerivedStateFromProps(
+    { to, from, timestamp, cacheResultsMs },
+    state
+  ) {
+    if (
+      to !== state.to ||
+      from !== state.from ||
+      Math.abs(timestamp - state.timestamp) > cacheResultsMs
+    ) {
       return {
         to,
         from,
-        date,
+        timestamp,
         results: null,
         placeholderResults: state.results
       };
@@ -117,7 +115,7 @@ export default class ResultsList extends Component {
     return null;
   }
 
-  constructor({ to, from, date }) {
+  constructor({ to, from, timestamp }) {
     super();
     /*
     Placeholder results is used to freeze when updating results.
@@ -128,7 +126,13 @@ export default class ResultsList extends Component {
     a spinner.
     This makes it appear quicker to the user.
     */
-    this.state = { to, from, date, results: null, placeholderResults: null };
+    this.state = {
+      to,
+      from,
+      timestamp,
+      results: null,
+      placeholderResults: null
+    };
   }
 
   componentDidMount() {
@@ -166,13 +170,13 @@ export default class ResultsList extends Component {
   fetchPromise = Promise.resolve();
   fetchResultsIfNeeded() {
     if (this.state.results != null) return;
-    const { to, from, date } = this.state;
+    const { to, from, timestamp } = this.state;
 
     this.fetchPromise = this.fetchPromise.then(async () => {
-      const results = await resultsFor(from, to, date);
+      const results = await resultsFor(from, to, timestamp);
 
       this.setState(s => {
-        if (s.to !== to || s.from !== from || s.date !== date) {
+        if (s.to !== to || s.from !== from || s.timestamp !== timestamp) {
           return null;
         }
 
@@ -195,11 +199,12 @@ export default class ResultsList extends Component {
   );
 
   renderSectionHeader = ({ section }) => {
-    const date = getDate(section.date);
+    const dateTime = getDate(section.date);
     return (
       <View style={header.container}>
         <Text style={header.title}>
-          {date.getDate()} {dates[date.getMonth()]} {date.getFullYear()}
+          {dateTime.getDate()} {monthNames[dateTime.getMonth()]}{" "}
+          {dateTime.getFullYear()}
         </Text>
       </View>
     );
