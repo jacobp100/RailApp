@@ -1,7 +1,5 @@
 import React, { Component } from "react";
 import {
-  View,
-  Text,
   SectionList,
   ActivityIndicator,
   StyleSheet,
@@ -9,27 +7,15 @@ import {
 } from "react-native";
 import { sortBy } from "lodash/fp";
 import stations from "../stations.json";
-import Result from "./Result";
 import EmptyList from "./EmptyList";
+import Result from "./Result";
 import ResultSeparator from "./ResultSeparator";
-import { getDate, formatDate, formatTime, monthNames } from "./util";
+import ResultSectionHeader from "./ResultSectionHeader";
+import { getDate, formatDate, formatTime } from "./util";
 
 const resultsList = StyleSheet.create({
   spinner: {
     flex: 1
-  }
-});
-
-const header = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    paddingHorizontal: 12,
-    paddingVertical: 6
-  },
-  title: {
-    fontSize: 10,
-    fontWeight: "600",
-    color: "#BABABA"
   }
 });
 
@@ -198,18 +184,6 @@ export default class ResultsList extends Component {
     />
   );
 
-  renderSectionHeader = ({ section }) => {
-    const dateTime = getDate(section.date);
-    return (
-      <View style={header.container}>
-        <Text style={header.title}>
-          {dateTime.getDate()} {monthNames[dateTime.getMonth()]}{" "}
-          {dateTime.getFullYear()}
-        </Text>
-      </View>
-    );
-  };
-
   getItemLayout = (data, index) => ({
     length: 80,
     offset: (80 + StyleSheet.hairlineWidth) * index,
@@ -222,7 +196,7 @@ export default class ResultsList extends Component {
       <SectionList
         sections={results}
         keyExtractor={this.keyExtractor}
-        renderSectionHeader={this.renderSectionHeader}
+        renderSectionHeader={ResultSectionHeader}
         renderItem={this.renderItem}
         ItemSeparatorComponent={ResultSeparator}
         ListEmptyComponent={NoResults}
