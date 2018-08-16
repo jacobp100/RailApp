@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white"
   },
   toolbar: {
+    flexDirection: "row",
     top: -12,
     paddingHorizontal: 48
   },
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8
   },
   clear: {
-    paddingLeft: 12
+    marginLeft: 6
   },
   hidden: {
     display: "none"
@@ -135,11 +136,11 @@ export default class App extends Component {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={customTimestamp != null && styles.hidden}
+            style={customTimestamp == null && styles.hidden}
             onPress={this.clearCustomDate}
           >
             <Image
-              source={require("../assets/Close.png")}
+              source={require("../assets/Cancel.png")}
               style={styles.clear}
             />
           </TouchableOpacity>
