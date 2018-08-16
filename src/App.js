@@ -44,7 +44,7 @@ export default class App extends Component {
   state = {
     from: null,
     to: null,
-    now: Date.now(),
+    now: Math.floor(Date.now() / MIN) * MIN,
     customTimestamp: null,
     search: "",
     activeInput: inputs.NONE
@@ -62,6 +62,7 @@ export default class App extends Component {
 
   handleAppStateChange = nextAppState => {
     if (nextAppState === "active") {
+      this.setState({ now: Math.floor(Date.now() / MIN) * MIN });
       this.startMonitoringTime();
     } else {
       this.stopMonitoringTime();
@@ -81,7 +82,8 @@ export default class App extends Component {
     }
   }
   updateNow = () => {
-    this.setState({ now: Date.now() });
+    // Note: Not Math.floor here
+    this.setState({ now: Math.round(Date.now() / MIN) * MIN });
   };
 
   datePicker = React.createRef();

@@ -1,17 +1,11 @@
 import React, { Component } from "react";
-import {
-  SectionList,
-  ActivityIndicator,
-  StyleSheet,
-  NativeModules
-} from "react-native";
-import { sortBy } from "lodash/fp";
+import { SectionList, ActivityIndicator, StyleSheet } from "react-native";
 import stations from "../stations.json";
 import EmptyList from "./EmptyList";
-import ResultItem from "./ResultItem";
-import ResultSeparator from "./ResultSeparator";
+import ResultItem, { separatorTypes } from "./ResultItem";
 import ResultSectionHeader from "./ResultSectionHeader";
-import { getDate, timestampToDate, timestampToMinutes } from "./util";
+import { isDeparted } from "./resultUtil";
+import { resultsFor } from "./atocUtil";
 
 const resultsList = StyleSheet.create({
   spinner: {
@@ -25,56 +19,6 @@ const NoResults = () => (
     body="We can only show direct journeys without changes"
   />
 );
-
-const resultFor = async (
-  startStation,
-  endStation,
-  { date, startTime, endTime }
-) => {
-  const day = (getDate(date).getDay() + 1) % 7;
-  const unsortedResults = await NativeModules.RouteReader.getData({
-    day,
-    date,
-    startStation,
-    endStation,
-    startTime,
-    endTime
-  });
-
-  const results = sortBy(["departureTime", "arrivalTime"], unsortedResults);
-
-  return { date, data: results };
-};
-
-const mod = (n, m) => ((n % m) + m) % m;
-
-const resultsFor = async (from, to, timestamp) => {
-  if (from == null || to == null || timestamp == null) return [];
-
-  const MINUTES_BEFORE = 30;
-  const MINUTES_AFTER = 90;
-  const DAY = 24 * 60;
-  const date = timestampToDate(timestamp);
-  const minutes = timestampToMinutes(timestamp);
-
-  const dateFrom = date + Math.floor((minutes - MINUTES_BEFORE) / DAY);
-  const dateTo = date + Math.ceil((minutes + MINUTES_AFTER) / DAY) - 1;
-
-  const timeFrom = mod(minutes - MINUTES_BEFORE, DAY);
-  const timeTo = mod(minutes + MINUTES_AFTER, DAY);
-
-  const promiseData = Array.from({ length: dateTo - dateFrom + 1 })
-    .map((_, i) => dateFrom + i)
-    .map(date => ({
-      date,
-      startTime: date === dateFrom ? timeFrom : 0,
-      endTime: date === dateTo ? timeTo : DAY
-    }));
-
-  const promises = promiseData.map(p => resultFor(from, to, p));
-  const results = await Promise.all(promises);
-  return results;
-};
 
 export default class ResultsList extends Component {
   static defaultProps = {
@@ -173,24 +117,45 @@ export default class ResultsList extends Component {
 
   keyExtractor = (key, index) => String(index);
 
-  renderItem = ({ item, section }) => (
-    <ResultItem
-      from={stations[this.props.from].name}
-      to={stations[this.props.to].name}
-      departureTime={item.departureTime}
-      arrivalTime={item.arrivalTime}
-      departurePlatform={item.departurePlatform}
-      arrivalPlatform={item.arrivalPlatform}
-      departed={
-        section.date === timestampToDate(now) &&
-        item.departureTime >= timestampToMinutes(now)
-      }
-    />
-  );
+  renderItem = ({ item, index, section }) => {
+    const { now } = this.props;
+    const departed = isDeparted(now, item);
+    const previousItem = index > 0 ? section.data[index - 1] : null;
+    const previousItemDeparted =
+      previousItem != null ? isDeparted(previousItem) : true;
 
-  renderSeparator = props => (
-    <ResultSeparator now={this.props.now} {...props} />
-  );
+    let separatorType =
+      index === 0 || departed || previousItemDeparted
+        ? separatorTypes.none
+        : separatorTypes.default;
+
+    const DAY = 24 * 60 * 60 * 1000;
+    if (section.timestamp >= now && nextSectionTimestamp + DAY < now) {
+      const currentDepartedAccordingToSchedule = item.departureTimestamp >= now;
+      const previousDepartedAccordingToSchedule =
+        previousItem != null ? previousItem.departureTimestamp > now : true;
+
+      if (
+        previousDepartedAccordingToSchedule &&
+        !currentDepartedAccordingToSchedule
+      ) {
+        separatorType = separatorTypes.CURRENT_TIME;
+      }
+    }
+
+    return (
+      <ResultItem
+        from={stations[this.props.from].name}
+        to={stations[this.props.to].name}
+        departureTime={item.departureTime}
+        arrivalTime={item.arrivalTime}
+        departurePlatform={item.departurePlatform}
+        arrivalPlatform={item.arrivalPlatform}
+        departed={departed}
+        separatorType={separatorType}
+      />
+    );
+  };
 
   getItemLayout = (data, index) => ({
     length: 80,
@@ -206,7 +171,6 @@ export default class ResultsList extends Component {
         keyExtractor={this.keyExtractor}
         renderSectionHeader={ResultSectionHeader}
         renderItem={this.renderItem}
-        ItemSeparatorComponent={this.renderSeparator}
         ListEmptyComponent={NoResults}
         extraData={this.props.now}
       />

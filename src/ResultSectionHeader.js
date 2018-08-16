@@ -16,12 +16,12 @@ const styles = StyleSheet.create({
 });
 
 export default ({ section }) => {
-  const dateTime = getDate(section.date);
+  const dateObj = new Date(section.timestamp);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        {dateTime.getDate()} {monthNames[dateTime.getMonth()]}{" "}
-        {dateTime.getFullYear()}
+        {dateObj.getDate()} {monthNames[dateObj.getMonth()]}{" "}
+        {dateObj.getFullYear()}
       </Text>
     </View>
   );
