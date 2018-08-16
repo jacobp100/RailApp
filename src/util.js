@@ -1,15 +1,19 @@
-export const getDate = daysPast1Jan2018 =>
-  new Date(2018, 0, daysPast1Jan2018 + 1);
+export const dateToTimestamp = daysPast1Jan2018 =>
+  Date.UTC(2018, 0, daysPast1Jan2018 + 1);
 
 const dayInMs = 24 * 60 * 60 * 1000;
-export const formatDate = date =>
-  Math.floor((date.getTime() - new Date(2018, 0, 1).getTime()) / dayInMs);
+const origin = Date.UTC(2018, 0, 1);
+export const timestampToDate = timestamp =>
+  Math.floor((timestamp - origin) / dayInMs);
 
-export const formatTime = date => date.getHours() * 60 + date.getMinutes();
+export const timestampToMinutes = timestamp => {
+  const dateObj = new Date(timestamp);
+  return dateObj.getUTCHours() * 60 + dateObj.getUTCMinutes();
+};
 
-export const formatTimeString = minuesPastMidnight => {
-  const hours = String(Math.floor(minuesPastMidnight / 60)).padStart(2, "0");
-  const minutes = String(minuesPastMidnight % 60).padStart(2, "0");
+export const formatTimeString = minutes => {
+  const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
+  const minutes = String(minutes % 60).padStart(2, "0");
   return hours + ":" + minutes;
 };
 

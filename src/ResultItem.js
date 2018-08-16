@@ -1,6 +1,10 @@
-import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
-import { formatTimeString, formatDurationString } from "./util";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import {
+  formatTimeString,
+  formatDurationString,
+  timestampToMinutes
+} from "./util";
 
 const styles = StyleSheet.create({
   container: {
@@ -45,9 +49,15 @@ export default ({
   departureTime,
   arrivalTime,
   departurePlatform,
-  arrivalPlatform
+  arrivalPlatform,
+  departed
 }) => (
-  <View style={styles.container}>
+  <View
+    style={StyleSheet.compose(
+      styles.container,
+      departed && styles.departed
+    )}
+  >
     <View style={styles.rowContainer}>
       <Text style={styles.time}>{formatTimeString(departureTime)}</Text>
       <View style={styles.locationPlatformContainer}>

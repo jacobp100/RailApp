@@ -152,6 +152,7 @@ export default class App extends Component {
             from={from}
             to={to}
             timestamp={customTimestamp != null ? customTimestamp : now}
+            now={now}
             cacheResultsMs={15 * 60 * 1000}
           />
         ) : (

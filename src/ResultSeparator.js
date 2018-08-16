@@ -1,5 +1,6 @@
-import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { timestampToDate, timestampToMinutes } from "./util";
 
 const styles = StyleSheet.create({
   container: {
@@ -16,12 +17,27 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     backgroundColor: "#F2F2F2"
+  },
+  activeLine: {
+    backgroundColor: "#286FB3"
   }
 });
 
-export default () => (
-  <View style={styles.container}>
-    <Text style={styles.timePlaceholder}>00:00</Text>
-    <View style={styles.line} />
-  </View>
-);
+export default ({ now, section, leadingItem, trailingItem }) => {
+  let active = false;
+  if (section.date === timestampToDate(now)) {
+    const minutes = timestampToMinutes(now);
+    active =
+      leadingItem.departureTime < minutes &&
+      trailingItem.departureTime >= minutes;
+  }
+
+  return active ? (
+    <View style={styles.activeLine} />
+  ) : (
+    <View style={styles.container}>
+      <Text style={styles.timePlaceholder}>00:00</Text>
+      <View style={styles.line} />
+    </View>
+  );
+};

@@ -8,10 +8,10 @@ import {
 import { sortBy } from "lodash/fp";
 import stations from "../stations.json";
 import EmptyList from "./EmptyList";
-import Result from "./Result";
+import ResultItem from "./ResultItem";
 import ResultSeparator from "./ResultSeparator";
 import ResultSectionHeader from "./ResultSectionHeader";
-import { getDate, formatDate, formatTime } from "./util";
+import { getDate, timestampToDate, timestampToMinutes } from "./util";
 
 const resultsList = StyleSheet.create({
   spinner: {
@@ -54,14 +54,14 @@ const resultsFor = async (from, to, timestamp) => {
   const MINUTES_BEFORE = 30;
   const MINUTES_AFTER = 90;
   const DAY = 24 * 60;
-  const baseDate = formatDate(new Date(timestamp));
-  const baseTime = formatTime(new Date(timestamp));
+  const date = timestampToDate(timestamp);
+  const minutes = timestampToMinutes(timestamp);
 
-  const dateFrom = baseDate + Math.floor((baseTime - MINUTES_BEFORE) / DAY);
-  const dateTo = baseDate + Math.ceil((baseTime + MINUTES_AFTER) / DAY) - 1;
+  const dateFrom = date + Math.floor((minutes - MINUTES_BEFORE) / DAY);
+  const dateTo = date + Math.ceil((minutes + MINUTES_AFTER) / DAY) - 1;
 
-  const timeFrom = mod(baseTime - MINUTES_BEFORE, DAY);
-  const timeTo = mod(baseTime + MINUTES_AFTER, DAY);
+  const timeFrom = mod(minutes - MINUTES_BEFORE, DAY);
+  const timeTo = mod(minutes + MINUTES_AFTER, DAY);
 
   const promiseData = Array.from({ length: dateTo - dateFrom + 1 })
     .map((_, i) => dateFrom + i)
@@ -173,15 +173,23 @@ export default class ResultsList extends Component {
 
   keyExtractor = (key, index) => String(index);
 
-  renderItem = ({ item: result }) => (
-    <Result
+  renderItem = ({ item, section }) => (
+    <ResultItem
       from={stations[this.props.from].name}
       to={stations[this.props.to].name}
-      departureTime={result.departureTime}
-      arrivalTime={result.arrivalTime}
-      departurePlatform={result.departurePlatform}
-      arrivalPlatform={result.arrivalPlatform}
+      departureTime={item.departureTime}
+      arrivalTime={item.arrivalTime}
+      departurePlatform={item.departurePlatform}
+      arrivalPlatform={item.arrivalPlatform}
+      departed={
+        section.date === timestampToDate(now) &&
+        item.departureTime >= timestampToMinutes(now)
+      }
     />
+  );
+
+  renderSeparator = props => (
+    <ResultSeparator now={this.props.now} {...props} />
   );
 
   getItemLayout = (data, index) => ({
@@ -198,8 +206,9 @@ export default class ResultsList extends Component {
         keyExtractor={this.keyExtractor}
         renderSectionHeader={ResultSectionHeader}
         renderItem={this.renderItem}
-        ItemSeparatorComponent={ResultSeparator}
+        ItemSeparatorComponent={this.renderSeparator}
         ListEmptyComponent={NoResults}
+        extraData={this.props.now}
       />
     ) : (
       <ActivityIndicator style={resultsList.spinner} />

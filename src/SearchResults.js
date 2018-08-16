@@ -7,10 +7,10 @@ import SearchItem from "./SearchItem";
 
 const keyExtractor = item => String(item.id);
 
-const scorer = (query, choice, options) =>
-  choice.tla.toUpperCase() === query.toUpperCase()
+const scorer = (search, choice, options) =>
+  choice.tla.toUpperCase() === search.toUpperCase()
     ? 100
-    : fuzzball.WRatio(query, choice.name, options);
+    : fuzzball.WRatio(search, choice.name, options);
 
 export default class SearchResults extends Component {
   state = { results: [] };
@@ -22,28 +22,28 @@ export default class SearchResults extends Component {
   }
 
   cachedResult = null;
-  performSearch(query) {
-    if (this.cachedResult != null && this.cachedResult.query === query) {
+  performSearch(search) {
+    if (this.cachedResult != null && this.cachedResult.search === search) {
       return this.cachedResult.results;
-    } else if (query.length === 0) {
+    } else if (search.length === 0) {
       return [];
     }
 
     const results = fuzzball
-      .extract(query, stations, {
+      .extract(search, stations, {
         limit: 12,
         cutoff: 50,
         scorer
       })
       .map(r => r[0]);
 
-    this.cachedResult = { query, results };
+    this.cachedResult = { search, results };
     return results;
   }
 
   computeResults = () => {
     this.setState((state, props) => ({
-      results: this.performSearch(props.query)
+      results: this.performSearch(props.search)
     }));
   };
 
