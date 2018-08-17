@@ -53,6 +53,7 @@ const resultFor = async (
     ["departureTimestamp", "arrivalTimestamp"],
     unsortedResults.map(formatResult)
   );
+  console.warn(results);
 
   return { timestamp: dateObj.getTime(), data: results };
 };

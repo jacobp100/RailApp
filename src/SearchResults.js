@@ -21,6 +21,11 @@ export default class SearchResults extends Component {
     this.timeout = setTimeout(this.computeResults, 50);
   }
 
+  unmounted = false;
+  componentWillUnmount() {
+    this.unmounted = true;
+  }
+
   cachedResult = null;
   performSearch(search) {
     if (this.cachedResult != null && this.cachedResult.search === search) {
@@ -42,6 +47,7 @@ export default class SearchResults extends Component {
   }
 
   computeResults = () => {
+    if (this.unmounted) return;
     this.setState((state, props) => ({
       results: this.performSearch(props.search)
     }));

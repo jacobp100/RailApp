@@ -1,8 +1,8 @@
-export const formatTimeString = minutes => {
-  const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
-  const minutes = String(minutes % 60).padStart(2, "0");
-  return hours + ":" + minutes;
-};
+// export const formatTimeString = minutes => {
+//   const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
+//   const minutes = String(minutes % 60).padStart(2, "0");
+//   return hours + ":" + minutes;
+// };
 
 export const formatTimestampTime = timestamp => {
   const dateObj = new Date(timestamp);
