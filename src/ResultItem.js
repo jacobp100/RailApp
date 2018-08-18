@@ -1,6 +1,7 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { formatTimestampTime, formatDurationString } from "./util";
+import { serviceStatus } from "./resultUtil";
 
 export const itemHeight = 80;
 
@@ -39,7 +40,11 @@ const styles = StyleSheet.create({
   locationPlatformContainer: {
     flex: 1
   },
-  journetTimeContainer: {
+  journeyTimeContainer: {
+    flexDirection: "row",
+    alignItems: "baseline"
+  },
+  arrivalPlatformStatusContainer: {
     flexDirection: "row",
     alignItems: "baseline"
   }
@@ -70,10 +75,80 @@ const separator = StyleSheet.create({
   }
 });
 
+const emblemBase = {
+  width: 10,
+  height: 10,
+  borderRadius: 5
+};
+
+const service = StyleSheet.create({
+  offlineIcon: {
+    top: 2,
+    marginLeft: "auto"
+  },
+  onTimeEmblem: {
+    ...emblemBase,
+    marginLeft: "auto",
+    backgroundColor: "#A3CB38"
+  },
+  delayedTitleContainer: {
+    flexDirection: "row"
+  },
+  delayedEmblem: {
+    ...emblemBase,
+    backgroundColor: "#EA2027"
+  },
+  delayedTitle: {
+    marginLeft: "auto",
+    marginRight: 6,
+    fontSize: 9,
+    color: "#EA2027"
+  }
+});
+
 export const separatorTypes = {
   NONE: 0,
   DEFAULT: 1,
   CURRENT_TIME: 2
+};
+
+const ServiceStatus = props => {
+  switch (props.type) {
+    case serviceStatus.OFFLINE:
+      return (
+        <Image
+          style={service.offlineIcon}
+          source={require("../assets/Offline.png")}
+        />
+      );
+    case serviceStatus.ON_TIME:
+      return <View style={service.onTimeEmblem} />;
+    case serviceStatus.DELAYED_BY:
+      return (
+        <React.Fragment>
+          <Text style={service.delayedTitle}>
+            {Math.floor(props.by / 60000)} mins late
+          </Text>
+          <View style={service.delayedEmblem} />
+        </React.Fragment>
+      );
+    case serviceStatus.DELAYED:
+      return (
+        <React.Fragment>
+          <Text style={service.delayedTitle}>Delayed</Text>
+          <View style={service.delayedEmblem} />
+        </React.Fragment>
+      );
+    case serviceStatus.CANCELLED:
+      return (
+        <React.Fragment>
+          <Text style={service.delayedTitle}>Cancelled</Text>
+          <View style={service.delayedEmblem} />
+        </React.Fragment>
+      );
+    default:
+      return null;
+  }
 };
 
 export default ({
@@ -83,6 +158,7 @@ export default ({
   arrivalTimestamp,
   departurePlatform,
   arrivalPlatform,
+  serviceStatus,
   departed,
   separatorType
 }) => (
@@ -110,7 +186,7 @@ export default ({
             : "No platform information"}
         </Text>
       </View>
-      <View style={styles.journetTimeContainer}>
+      <View style={styles.journeyTimeContainer}>
         <Text style={styles.journeyTimeValue}>
           {formatDurationString(departureTimestamp, arrivalTimestamp)}
         </Text>
@@ -121,11 +197,14 @@ export default ({
       <Text style={styles.time}>{formatTimestampTime(arrivalTimestamp)}</Text>
       <View style={styles.locationPlatformContainer}>
         <Text>{to}</Text>
-        <Text style={styles.platform}>
-          {arrivalPlatform
-            ? `Platform ${arrivalPlatform} (to be confirmed)`
-            : "No platform information"}
-        </Text>
+        <View style={styles.arrivalPlatformStatusContainer}>
+          <Text style={styles.platform}>
+            {arrivalPlatform
+              ? `Platform ${arrivalPlatform} (to be confirmed)`
+              : "No platform information"}
+          </Text>
+          <ServiceStatus {...serviceStatus} />
+        </View>
       </View>
     </View>
   </View>

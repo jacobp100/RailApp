@@ -6,10 +6,11 @@ export default (cb, interval) => {
   let nextTime = start + startInterval;
 
   const update = () => {
+    const alignedInterval = nextTime;
     nextTime += interval;
     const nextInterval = nextTime - Date.now();
     timeoutHandle = setTimeout(update, nextInterval);
-    cb();
+    cb(alignedInterval);
   };
 
   timeoutHandle = setTimeout(update, startInterval);

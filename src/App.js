@@ -44,20 +44,20 @@ const MIN = 60 * 1000;
 
 export default class App extends Component {
   state = {
-    from: stations.find(r => r.tla === "WAT").id,
-    to: stations.find(r => r.tla === "SUR").id,
+    from: stations.find(s => s.tla === "IPS").id,
+    to: stations.find(s => s.tla === "LST").id,
     now: Math.floor(Date.now() / MIN) * MIN,
     customTimestamp: null,
     search: "",
     activeInput: inputs.NONE
   };
 
-  componentDidUpdate() {
-    this.stopMonitoringTime();
+  componentDidMount() {
+    this.startMonitoringTime();
     AppState.addEventListener("change", this.handleAppStateChange);
   }
 
-  componentDidUpdate() {
+  componentWillUnmount() {
     this.stopMonitoringTime();
     AppState.removeEventListener("change", this.handleAppStateChange);
   }
@@ -83,10 +83,7 @@ export default class App extends Component {
       this.intervalHandle = null;
     }
   }
-  updateNow = () => {
-    // Note: Not Math.floor here
-    this.setState({ now: Math.round(Date.now() / MIN) * MIN });
-  };
+  updateNow = now => this.setState({ now });
 
   datePicker = React.createRef();
   showDatePicker = () => {

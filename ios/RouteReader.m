@@ -115,6 +115,8 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
               if (toId == endStation) {
                 id json = @{
                             @"routeIndex": @(routeIndex),
+                            @"routeOrigin": @(route.stopsArray.firstObject.stationId),
+                            @"routeDestination": @(route.stopsArray.lastObject.stationId),
                             @"departureTime": @(from.departureTime),
                             @"arrivalTime": @(to.arrivalTime),
                             @"departurePlatform": from.platform,

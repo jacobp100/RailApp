@@ -1,9 +1,9 @@
 import { NativeModules } from "react-native";
 import { sortBy } from "lodash/fp";
-import { departureStatus } from "./resultUtil";
+import { serviceStatus, departureStatus } from "./resultUtil";
 
 // (Hopefully) handles BST (assumg BST locale)
-export const dateMinutesToTimestamp = (daysPast1Jan2018, minutes) =>
+const dateMinutesToTimestamp = (daysPast1Jan2018, minutes) =>
   new Date(2018, 0, daysPast1Jan2018 + 1, 0, minutes).getTime();
 
 const origin = Date.UTC(2018, 0, 1);
@@ -28,11 +28,16 @@ const resultFor = async (
   });
 
   const formatResult = ({
+    routeOrigin,
+    routeDestination,
     departureTime,
     arrivalTime,
     departurePlatform,
     arrivalPlatform
   }) => ({
+    serviceId: null,
+    routeOrigin,
+    routeDestination,
     departureTimestamp: dateMinutesToTimestamp(date, departureTime),
     arrivalTimestamp: dateMinutesToTimestamp(
       arrivalTime > departureTime ? date : date + 1,
@@ -40,7 +45,8 @@ const resultFor = async (
     ),
     departureStatus: departureStatus.UNKNOWN,
     departurePlatform,
-    arrivalPlatform
+    arrivalPlatform,
+    serviceStatus: { type: serviceStatus.OFFLINE }
   });
 
   results = sortBy(
@@ -51,7 +57,7 @@ const resultFor = async (
   return { timestamp: dateObj.getTime(), data: results };
 };
 
-export const resultsFor = async (from, to, timestamp) => {
+export default async (from, to, timestamp) => {
   if (from == null || to == null || timestamp == null) return [];
 
   const MINUTES_BEFORE = 30;
