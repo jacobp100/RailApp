@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { SectionList, ActivityIndicator, StyleSheet } from "react-native";
 import stations from "../stations.json";
 import EmptyList from "./EmptyList";
-import ResultItem, { separatorTypes } from "./ResultItem";
+import ResultItem, { itemHeight, separatorTypes } from "./ResultItem";
 import ResultSectionHeader from "./ResultSectionHeader";
 import { isDeparted } from "./resultUtil";
 import { resultsFor } from "./atocUtil";
@@ -122,7 +122,7 @@ export default class ResultsList extends Component {
     const departed = isDeparted(now, item);
     const previousItem = index > 0 ? section.data[index - 1] : null;
     const previousItemDeparted =
-      previousItem != null ? isDeparted(previousItem) : true;
+      previousItem != null ? isDeparted(now, previousItem) : true;
 
     let separatorType =
       index === 0 || departed || previousItemDeparted
@@ -130,10 +130,12 @@ export default class ResultsList extends Component {
         : separatorTypes.default;
 
     const DAY = 24 * 60 * 60 * 1000;
-    if (section.timestamp >= now && nextSectionTimestamp + DAY < now) {
-      const currentDepartedAccordingToSchedule = item.departureTimestamp >= now;
+    const sectionIsToday =
+      section.timestamp <= now && section.timestamp + DAY >= now;
+    if (sectionIsToday) {
+      const currentDepartedAccordingToSchedule = item.departureTimestamp <= now;
       const previousDepartedAccordingToSchedule =
-        previousItem != null ? previousItem.departureTimestamp > now : true;
+        previousItem != null ? previousItem.departureTimestamp <= now : true;
 
       if (
         previousDepartedAccordingToSchedule &&
@@ -147,8 +149,8 @@ export default class ResultsList extends Component {
       <ResultItem
         from={stations[this.props.from].name}
         to={stations[this.props.to].name}
-        departureTime={item.departureTime}
-        arrivalTime={item.arrivalTime}
+        departureTimestamp={item.departureTimestamp}
+        arrivalTimestamp={item.arrivalTimestamp}
         departurePlatform={item.departurePlatform}
         arrivalPlatform={item.arrivalPlatform}
         departed={departed}
@@ -158,24 +160,34 @@ export default class ResultsList extends Component {
   };
 
   getItemLayout = (data, index) => ({
-    length: 80,
-    offset: (80 + StyleSheet.hairlineWidth) * index,
+    length: itemHeight,
+    offset: itemHeight * index,
     index
   });
 
   render() {
     const results = this.state.results || this.state.placeholderResults;
-    return results != null ? (
+    if (results == null) {
+      return <ActivityIndicator style={resultsList.spinner} />;
+    }
+
+    const { now } = this.props;
+    const initialScrollIndex = Math.max(
+      results[0].data.findIndex(d => d.departureTimestamp >= now) - 1,
+      0
+    );
+
+    return (
       <SectionList
         sections={results}
         keyExtractor={this.keyExtractor}
         renderSectionHeader={ResultSectionHeader}
         renderItem={this.renderItem}
+        getItemLayout={this.getItemLayout}
+        initialScrollIndex={initialScrollIndex}
         ListEmptyComponent={NoResults}
-        extraData={this.props.now}
+        extraData={now}
       />
-    ) : (
-      <ActivityIndicator style={resultsList.spinner} />
     );
   }
 }

@@ -2,11 +2,13 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { formatTimestampTime, formatDurationString } from "./util";
 
+export const itemHeight = 80;
+
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 9,
     paddingHorizontal: 12,
-    height: 80,
+    height: itemHeight,
     justifyContent: "space-between"
   },
   containerInactive: {

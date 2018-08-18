@@ -7,7 +7,7 @@ export const departureStatus = {
 export const isDeparted = (timestamp, result) => {
   switch (result.departureStatus) {
     case departureStatus.UNKNOWN:
-      return result.departure <= timestamp;
+      return result.departureTimestamp <= timestamp;
     case departureStatus.NOT_DEPARTED:
       return false;
     case departureStatus.DEPARTED:

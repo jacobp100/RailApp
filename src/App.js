@@ -14,6 +14,8 @@ import SearchResults from "./SearchResults";
 import DatePickerModal from "./DatePickerModal";
 import everyInterval from "./everyInterval";
 
+import stations from "../stations.json";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -42,8 +44,8 @@ const MIN = 60 * 1000;
 
 export default class App extends Component {
   state = {
-    from: null,
-    to: null,
+    from: stations.find(r => r.tla === "WAT").id,
+    to: stations.find(r => r.tla === "SUR").id,
     now: Math.floor(Date.now() / MIN) * MIN,
     customTimestamp: null,
     search: "",

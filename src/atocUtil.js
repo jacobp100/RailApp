@@ -7,13 +7,7 @@ export const dateMinutesToTimestamp = (daysPast1Jan2018, minutes) =>
   new Date(2018, 0, daysPast1Jan2018 + 1, 0, minutes).getTime();
 
 const origin = Date.UTC(2018, 0, 1);
-export const timestampToDate = timestamp =>
-  Math.floor((timestamp - origin) / dayInMs);
-
-export const timestampToMinutes = timestamp => {
-  const dateObj = new Date(timestamp);
-  return dateObj.getUTCHours() * 60 + dateObj.getUTCMinutes();
-};
+const dayInMs = 24 * 60 * 60 * 1000;
 
 const mod = (n, m) => ((n % m) + m) % m;
 
@@ -23,7 +17,7 @@ const resultFor = async (
   { date, startTime, endTime }
 ) => {
   const dateObj = new Date(2018, 0, date + 1);
-  const day = (getDate(dateObj).getDay() + 1) % 7;
+  const day = (dateObj.getDay() + 6) % 7;
   const unsortedResults = await NativeModules.RouteReader.getData({
     day,
     date,
@@ -42,9 +36,9 @@ const resultFor = async (
     departureTimestamp: dateMinutesToTimestamp(date, departureTime),
     arrivalTimestamp: dateMinutesToTimestamp(
       arrivalTime > departureTime ? date : date + 1,
-      minutes
+      arrivalTime
     ),
-    departed: departureStatus.UNKNOWN,
+    departureStatus: departureStatus.UNKNOWN,
     departurePlatform,
     arrivalPlatform
   });
@@ -53,7 +47,6 @@ const resultFor = async (
     ["departureTimestamp", "arrivalTimestamp"],
     unsortedResults.map(formatResult)
   );
-  console.warn(results);
 
   return { timestamp: dateObj.getTime(), data: results };
 };
@@ -64,8 +57,14 @@ export const resultsFor = async (from, to, timestamp) => {
   const MINUTES_BEFORE = 30;
   const MINUTES_AFTER = 90;
   const DAY = 24 * 60;
-  const date = timestampToDate(timestamp);
-  const minutes = timestampToMinutes(timestamp);
+  const dateObj = new Date(timestamp);
+  const localizedTimestamp = Date.UTC(
+    dateObj.getFullYear(),
+    dateObj.getMonth(),
+    dateObj.getDate()
+  );
+  const date = Math.floor((localizedTimestamp - origin) / dayInMs);
+  const minutes = dateObj.getHours() * 60 + dateObj.getMinutes();
 
   const dateFrom = date + Math.floor((minutes - MINUTES_BEFORE) / DAY);
   const dateTo = date + Math.ceil((minutes + MINUTES_AFTER) / DAY) - 1;
