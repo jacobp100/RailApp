@@ -44,8 +44,8 @@ const MIN = 60 * 1000;
 
 export default class App extends Component {
   state = {
-    from: stations.find(s => s.tla === "IPS").id,
-    to: stations.find(s => s.tla === "LST").id,
+    from: null,
+    to: null,
     now: Math.floor(Date.now() / MIN) * MIN,
     customTimestamp: null,
     search: "",
