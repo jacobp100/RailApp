@@ -76,7 +76,7 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
     return;
   }
 
-  NSInteger day = [[options valueForKey:@"day"] integerValue];
+  NSInteger day = 1 << [[options valueForKey:@"day"] integerValue];
   NSInteger date = [[options valueForKey:@"date"] integerValue];
   NSInteger startStation = [[options valueForKey:@"startStation"] integerValue];
   NSInteger endStation = [[options valueForKey:@"endStation"] integerValue];
