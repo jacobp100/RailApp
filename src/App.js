@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import Input, { inputs } from "./Input";
 import EmptyList from "./EmptyList";
+import { LiveResultsProvider } from "./LiveResults";
 import ResultsList from "./ResultsList";
 import SearchResults from "./SearchResults";
 import DatePickerModal from "./DatePickerModal";
@@ -42,8 +43,10 @@ const MIN = 60 * 1000;
 
 export default class App extends Component {
   state = {
-    from: null,
-    to: null,
+    // from: null,
+    // to: null,
+    from: require("../stations.json").find(s => s.crc === "WAT").id,
+    to: require("../stations.json").find(s => s.crc === "SUR").id,
     now: Math.floor(Date.now() / MIN) * MIN,
     customTimestamp: null,
     search: "",
@@ -119,53 +122,54 @@ export default class App extends Component {
   render() {
     const { from, to, customTimestamp, now, activeInput, search } = this.state;
     return (
-      <View style={styles.container}>
-        <Input
-          from={from}
-          to={to}
-          activeInput={activeInput}
-          onSetSearch={this.setSearch}
-          onSetActiveInput={this.setActiveInput}
-          onSwitch={this.switchLocations}
-        />
-        <View style={styles.toolbar}>
-          <TouchableOpacity onPress={this.showDatePicker}>
-            <Text style={styles.pickDate}>
-              {customTimestamp == null ? "SET TIME" : "CUSTOM TIME SET"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={customTimestamp == null && styles.hidden}
-            onPress={this.clearCustomDate}
-          >
-            <Image
-              source={require("../assets/Cancel.png")}
-              style={styles.clear}
-            />
-          </TouchableOpacity>
-        </View>
-        {activeInput !== inputs.NONE ? (
-          <SearchResults search={search} onSelect={this.setSearchResult} />
-        ) : from != null && to != null ? (
-          <ResultsList
+      <LiveResultsProvider from={from} to={to} now={now}>
+        <View style={styles.container}>
+          <Input
             from={from}
             to={to}
-            timestamp={customTimestamp != null ? customTimestamp : now}
-            now={now}
-            cacheResultsMs={15 * 60 * 1000}
+            activeInput={activeInput}
+            onSetSearch={this.setSearch}
+            onSetActiveInput={this.setActiveInput}
+            onSwitch={this.switchLocations}
           />
-        ) : (
-          <EmptyList
-            title="To Get Started"
-            body="Fill in the ‘from’ and ‘to’ fields above to search for trains"
+          <View style={styles.toolbar}>
+            <TouchableOpacity onPress={this.showDatePicker}>
+              <Text style={styles.pickDate}>
+                {customTimestamp == null ? "SET TIME" : "CUSTOM TIME SET"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={customTimestamp == null && styles.hidden}
+              onPress={this.clearCustomDate}
+            >
+              <Image
+                source={require("../assets/Cancel.png")}
+                style={styles.clear}
+              />
+            </TouchableOpacity>
+          </View>
+          {activeInput !== inputs.NONE ? (
+            <SearchResults search={search} onSelect={this.setSearchResult} />
+          ) : from != null && to != null ? (
+            <ResultsList
+              from={from}
+              to={to}
+              timestamp={customTimestamp != null ? customTimestamp : now}
+              now={now}
+            />
+          ) : (
+            <EmptyList
+              title="To Get Started"
+              body="Fill in the ‘from’ and ‘to’ fields above to search for trains"
+            />
+          )}
+          <DatePickerModal
+            ref={this.datePicker}
+            mode="datetime"
+            minuteInterval={5}
           />
-        )}
-        <DatePickerModal
-          ref={this.datePicker}
-          mode="datetime"
-          minuteInterval={5}
-        />
-      </View>
+        </View>
+      </LiveResultsProvider>
     );
   }
 }

@@ -15,44 +15,6 @@ const styles = StyleSheet.create({
   containerInactive: {
     // Can't put opacity here, because of separator
     backgroundColor: "#F2F2F2"
-  },
-  rowContainer: {
-    flexDirection: "row"
-  },
-  rowContainerInactive: {
-    opacity: 0.5
-  },
-  time: {
-    marginRight: 9,
-    fontWeight: "500",
-    fontVariant: ["tabular-nums"]
-  },
-  timeFucked: {
-    color: "#EA2027"
-  },
-  platform: {
-    color: "#BABABA",
-    fontSize: 9
-  },
-  journeyTimeValue: {
-    fontWeight: "700"
-  },
-  journeyTimeUnit: {
-    marginLeft: 3,
-    fontWeight: "900",
-    fontSize: 9,
-    letterSpacing: 0.3
-  },
-  locationPlatformContainer: {
-    flex: 1
-  },
-  journeyTimeContainer: {
-    flexDirection: "row",
-    alignItems: "baseline"
-  },
-  arrivalPlatformStatusContainer: {
-    flexDirection: "row",
-    alignItems: "baseline"
   }
 });
 
@@ -81,20 +43,58 @@ const separator = StyleSheet.create({
   }
 });
 
+const time = StyleSheet.create({
+  base: {
+    marginRight: 9,
+    fontWeight: "500",
+    fontVariant: ["tabular-nums"]
+  },
+  delayedCancelled: {
+    color: "#EA2027"
+  },
+  timePlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    marginRight: 9,
+    textAlign: "center"
+  },
+  hidden: {
+    opacity: 0
+  }
+});
+
+const journeyTime = StyleSheet.create({
+  value: {
+    fontWeight: "700"
+  },
+  unit: {
+    marginLeft: 3,
+    fontWeight: "900",
+    fontSize: 9,
+    letterSpacing: 0.3
+  },
+  container: {
+    flexDirection: "row",
+    alignItems: "baseline"
+  }
+});
+
 const emblemBase = {
+  top: 1,
   width: 10,
   height: 10,
   borderRadius: 5
 };
 
 const service = StyleSheet.create({
+  container: {
+    alignSelf: "flex-end",
+    flexDirection: "row"
+  },
   offlineIcon: {
-    top: 2,
     marginLeft: "auto"
   },
   onTimeEmblem: {
     ...emblemBase,
-    marginLeft: "auto",
     backgroundColor: "#A3CB38"
   },
   delayedTitleContainer: {
@@ -105,10 +105,29 @@ const service = StyleSheet.create({
     backgroundColor: "#EA2027"
   },
   delayedTitle: {
-    marginLeft: "auto",
     marginRight: 6,
     fontSize: 9,
     color: "#EA2027"
+  }
+});
+
+const row = StyleSheet.create({
+  container: {
+    flexDirection: "row"
+  },
+  containerInactive: {
+    opacity: 0.5
+  },
+  platform: {
+    color: "#BABABA",
+    fontSize: 9
+  },
+  locationPlatformContainer: {
+    flex: 1
+  },
+  platformStatusContainer: {
+    flexDirection: "row",
+    alignItems: "baseline"
   }
 });
 
@@ -118,89 +137,114 @@ export const separatorTypes = {
   CURRENT_TIME: 2
 };
 
-const fuckedTypes = new Set([
+const delayedCancelledTypes = new Set([
   serviceStatus.DELAYED_BY,
   serviceStatus.DELAYED,
   serviceStatus.CANCELLED
 ]);
-const isFucked = ({ type }) => fuckedTypes.has(type);
+const isDelayedCancelled = ({ type }) => delayedCancelledTypes.has(type);
+
+const Time = ({ value, departed }) =>
+  Number.isFinite(value) ? (
+    <Text
+      style={StyleSheet.compose(
+        time.base,
+        !departed && isDelayedCancelled(serviceStatus) && time.delayedCancelled
+      )}
+    >
+      {formatTimestampTime(value)}
+    </Text>
+  ) : (
+    <View>
+      <Text style={[time.base, time.hidden]}>00:00</Text>
+      <Text style={time.timePlaceholder}>—</Text>
+    </View>
+  );
+
+const JourneyTime = ({ departureTimestamp, arrivalTimestamp }) => (
+  <View style={journeyTime.container}>
+    <Text style={journeyTime.value}>
+      {Number.isFinite(arrivalTimestamp - departureTimestamp)
+        ? formatDurationString(departureTimestamp, arrivalTimestamp)
+        : "?"}
+    </Text>
+    <Text style={journeyTime.unit}>MIN</Text>
+  </View>
+);
 
 const ServiceStatus = props => {
   switch (props.serviceStatus.type) {
     case serviceStatus.OFFLINE:
       return (
-        <Image
-          style={service.offlineIcon}
-          source={require("../assets/Offline.png")}
-        />
+        <View style={service.container}>
+          <Image
+            style={service.offlineIcon}
+            source={require("../assets/Offline.png")}
+          />
+        </View>
       );
     case serviceStatus.ON_TIME:
-      return <View style={service.onTimeEmblem} />;
+      return (
+        <View style={service.container}>
+          <View style={service.onTimeEmblem} />
+        </View>
+      );
     case serviceStatus.DELAYED_BY: {
       const by = Math.floor(
         (props.serviceStatus.until - props.departureTimestamp) / 6000
       );
       return (
-        <React.Fragment>
+        <View style={service.container}>
           <Text style={service.delayedTitle}>{by} mins late</Text>
           <View style={service.delayedEmblem} />
-        </React.Fragment>
+        </View>
       );
     }
     case serviceStatus.DELAYED:
       return (
-        <React.Fragment>
+        <View style={service.container}>
           <Text style={service.delayedTitle}>Delayed</Text>
           <View style={service.delayedEmblem} />
-        </React.Fragment>
+        </View>
       );
     case serviceStatus.CANCELLED:
       return (
-        <React.Fragment>
+        <View style={service.container}>
           <Text style={service.delayedTitle}>Cancelled</Text>
           <View style={service.delayedEmblem} />
-        </React.Fragment>
+        </View>
       );
     default:
       return null;
   }
 };
 
-// const Row = ({
-//   timestamp,
-//   station,
-//   platform,
-//   serviceStatus,
-//   lowerAttachment
-// }) => (
-//   <View
-//     style={StyleSheet.compose(
-//       styles.rowContainer,
-//       departed && styles.rowContainerInactive
-//     )}
-//   >
-//     <Text
-//       style={StyleSheet.compose(
-//         styles.time,
-//         !departed && isFucked(serviceStatus) && styles.timeFucked
-//       )}
-//     >
-//       {formatTimestampTime(timestamp)}
-//     </Text>
-//     <View style={styles.locationPlatformContainer}>
-//       <Text>{station}</Text>
-//       <View style={styles.arrivalPlatformStatusContainer}>
-//         <Text style={styles.platform}>
-//           {platform
-//             ? `Platform ${platform} (to be confirmed)`
-//             : "No platform information"}
-//         </Text>
-//         {lowerAttachment}
-//       </View>
-//       {upperAttachment}
-//     </View>
-//   </View>
-// );
+const Row = ({
+  station,
+  timestamp,
+  platform,
+  departed,
+  serviceStatus,
+  attachment
+}) => (
+  <View
+    style={StyleSheet.compose(
+      row.container,
+      departed && row.containerInactive
+    )}
+  >
+    <Time value={timestamp} departed={departed} />
+    <View style={row.locationPlatformContainer}>
+      <Text>{station}</Text>
+      <Text style={row.platform}>
+        {platform
+          ? `Platform ${platform} (to be confirmed)`
+          : "No platform information"}
+      </Text>
+    </View>
+    {attachment}
+  </View>
+);
 
 export default ({
   to,
@@ -227,63 +271,31 @@ export default ({
         <View style={separator.line} />
       </View>
     ) : null}
-    <View
-      style={StyleSheet.compose(
-        styles.rowContainer,
-        departed && styles.rowContainerInactive
-      )}
-    >
-      <Text
-        style={StyleSheet.compose(
-          styles.time,
-          !departed && isFucked(serviceStatus) && styles.timeFucked
-        )}
-      >
-        {formatTimestampTime(departureTimestamp)}
-      </Text>
-      <View style={styles.locationPlatformContainer}>
-        <Text>{from}</Text>
-        <Text style={styles.platform}>
-          {departurePlatform
-            ? `Platform ${departurePlatform} (to be confirmed)`
-            : "No platform information"}
-        </Text>
-      </View>
-      <View style={styles.journeyTimeContainer}>
-        <Text style={styles.journeyTimeValue}>
-          {formatDurationString(departureTimestamp, arrivalTimestamp)}
-        </Text>
-        <Text style={styles.journeyTimeUnit}>MIN</Text>
-      </View>
-    </View>
-    <View
-      style={StyleSheet.compose(
-        styles.rowContainer,
-        departed && styles.rowContainerInactive
-      )}
-    >
-      <Text
-        style={StyleSheet.compose(
-          styles.time,
-          !departed && isFucked(serviceStatus) && styles.timeFucked
-        )}
-      >
-        {formatTimestampTime(arrivalTimestamp)}
-      </Text>
-      <View style={styles.locationPlatformContainer}>
-        <Text>{to}</Text>
-        <View style={styles.arrivalPlatformStatusContainer}>
-          <Text style={styles.platform}>
-            {arrivalPlatform
-              ? `Platform ${arrivalPlatform} (to be confirmed)`
-              : "No platform information"}
-          </Text>
-          <ServiceStatus
-            serviceStatus={serviceStatus}
-            departureTimestamp={departureTimestamp}
-          />
-        </View>
-      </View>
-    </View>
+    <Row
+      station={from}
+      timestamp={departureTimestamp}
+      platform={departurePlatform}
+      departed={departed}
+      serviceStatus={serviceStatus}
+      attachment={
+        <JourneyTime
+          departureTimestamp={departureTimestamp}
+          arrivalTimestamp={arrivalTimestamp}
+        />
+      }
+    />
+    <Row
+      station={to}
+      timestamp={arrivalTimestamp}
+      platform={arrivalPlatform}
+      departed={departed}
+      serviceStatus={serviceStatus}
+      attachment={
+        <ServiceStatus
+          serviceStatus={serviceStatus}
+          departureTimestamp={departureTimestamp}
+        />
+      }
+    />
   </View>
 );

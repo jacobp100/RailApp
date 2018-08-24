@@ -86,7 +86,11 @@ const parseService = (
       serviceStatus: { type: serviceStatus.CANCELLED }
     };
   } else if (getTime(etd) != null) {
-    const actualDepartureTimestamp = getTime(etd);
+    let actualDepartureTimestamp = getTime(etd);
+    if (actualDepartureTimestamp < departureTimestamp) {
+      const DAY = 24 * 60 * 60 * 1000;
+      actualDepartureTimestamp += DAY;
+    }
     return {
       serviceId,
       routeOrigin,

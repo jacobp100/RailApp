@@ -4,8 +4,8 @@ import stations from "../stations.json";
 import EmptyList from "./EmptyList";
 import ResultItem, { itemHeight, separatorTypes } from "./ResultItem";
 import ResultSectionHeader from "./ResultSectionHeader";
-import fetchLiveResults from "./fetchLiveResults";
-import fetchOfflineResults from "./fetchOfflineResults";
+import offlineResultsCache from "./offlineResultsCache";
+import { LiveResultsConsumer } from "./LiveResults";
 import { isScheduledDeparted, isDeparted, mergeResults } from "./resultUtil";
 
 const resultsList = StyleSheet.create({
@@ -21,32 +21,11 @@ const NoResults = () => (
   />
 );
 
+const getOfflineResults = offlineResultsCache({
+  refreshThreshold: 15 * 60 * 1000
+});
+
 export default class ResultsList extends Component {
-  static defaultProps = {
-    cacheResultsMs: 0
-  };
-
-  static getDerivedStateFromProps(
-    { to, from, timestamp, cacheResultsMs },
-    state
-  ) {
-    if (
-      to !== state.to ||
-      from !== state.from ||
-      Math.abs(timestamp - state.timestamp) > cacheResultsMs
-    ) {
-      return {
-        to,
-        from,
-        timestamp,
-        offlineResults: null,
-        placeholderOfflineResults: state.offlineResults,
-        liveResults: null
-      };
-    }
-    return null;
-  }
-
   /*
     Placeholder results is used to freeze when updating results.
     If we're able to get the new results within 300ms, we'll show the previous
@@ -56,17 +35,10 @@ export default class ResultsList extends Component {
     a spinner.
     This makes it appear quicker to the user.
     */
-  state = {
-    to: this.props,
-    from: this.props,
-    timestamp: this.props,
-    offlineResults: null,
-    placeholderOfflineResults: null,
-    liveResults: null
-  };
+  state = { offlineResults: null, placeholderOfflineResults: null };
 
   componentDidMount() {
-    this.fetchResultsIfNeeded();
+    this.fetchOfflineResultsIfNeeded();
   }
 
   unmounted = false;
@@ -76,7 +48,7 @@ export default class ResultsList extends Component {
 
   clearPlaceholderResultsTimeout = null;
   componentDidUpdate(prevProps, prevState) {
-    this.fetchResultsIfNeeded();
+    this.fetchOfflineResultsIfNeeded();
 
     if (
       prevState.offlineResults != null &&
@@ -97,30 +69,32 @@ export default class ResultsList extends Component {
     }
   }
 
-  fetchPromise = Promise.resolve();
-  fetchResultsIfNeeded() {
-    if (this.state.offlineResults != null) return;
-
-    const { to, from, timestamp } = this.state;
-    if (to == null || from == null || timestamp == null) return;
-
-    const setStateIfUnchanged = state =>
-      this.setState(s => {
-        return s.to === to && s.from === from && s.timestamp === timestamp
-          ? state
-          : null;
-      });
-
-    this.fetchPromise = this.fetchPromise.then(() =>
-      Promise.all([
-        fetchOfflineResults(from, to, timestamp).then(offlineResults =>
-          setStateIfUnchanged({ offlineResults })
-        ),
-        fetchLiveResults(from, to, timestamp).then(liveResults =>
-          setStateIfUnchanged({ liveResults })
-        )
-      ])
-    );
+  fetchOfflineResultsIfNeeded() {
+    const { from, to, timestamp, now } = this.props;
+    try {
+      const offlineResults = getOfflineResults({ from, to, timestamp, now });
+      this.setState(
+        state =>
+          state.offlineResults !== offlineResults
+            ? { offlineResults, placeholderOfflineResults: null }
+            : null
+      );
+    } catch (e) {
+      if (e != null && typeof e.then === "function") {
+        e.then(offlineResults => {
+          if (!this.unmounted) {
+            this.setState(
+              (state, props) =>
+                props.from === from && props.to === to
+                  ? { offlineResults, placeholderOfflineResults: null }
+                  : null
+            );
+          }
+        });
+      } else {
+        throw e;
+      }
+    }
   }
 
   keyExtractor = (key, index) => String(index);
@@ -174,10 +148,9 @@ export default class ResultsList extends Component {
     index
   });
 
-  render() {
+  renderWithLiveResults = ({ liveResults }) => {
     const offlineResults =
       this.state.offlineResults || this.state.placeholderOfflineResults;
-    const { liveResults } = this.state;
 
     if (offlineResults == null) {
       return <ActivityIndicator style={resultsList.spinner} />;
@@ -185,10 +158,13 @@ export default class ResultsList extends Component {
 
     const { now } = this.props;
     const sections = mergeResults(offlineResults, liveResults);
-    const initialScrollIndex = Math.max(
-      sections[0].data.findIndex(d => d.departureTimestamp > now) - 1,
-      0
-    );
+    const initialScrollIndex =
+      sections.length !== 0
+        ? Math.max(
+            sections[0].data.findIndex(d => d.departureTimestamp > now) - 1,
+            0
+          )
+        : 0;
 
     return (
       <SectionList
@@ -201,6 +177,12 @@ export default class ResultsList extends Component {
         ListEmptyComponent={NoResults}
         extraData={now}
       />
+    );
+  };
+
+  render() {
+    return (
+      <LiveResultsConsumer>{this.renderWithLiveResults}</LiveResultsConsumer>
     );
   }
 }

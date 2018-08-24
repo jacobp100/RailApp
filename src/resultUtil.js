@@ -59,22 +59,15 @@ const mergeData = (atocData, liveData) =>
     return results.concat(result);
   }, []);
 
-export const mergeResults = (atocSections, liveData) => {
-  if (atocSections == null) {
-    return [];
-  } else if (liveData == null) {
-    return atocSections;
-  }
-
-  const DAY = 24 * 60 * 60 * 1000;
-  return atocSections.map(section => {
+const DAY = 24 * 60 * 60 * 1000;
+export const mergeResults = (atocSections, liveData) =>
+  atocSections.map(section => {
     const sectionStartTimestamp = section.timestamp;
     const sectionEndTimestamp = sectionStartTimestamp + DAY;
-    const liveDataForDay = liveData.filter(
-      result =>
-        result.departureTimestamp >= sectionStartTimestamp &&
-        result.departureTimestamp < sectionEndTimestamp
-    );
+    const resultWithinSection = result =>
+      result.departureTimestamp >= sectionStartTimestamp &&
+      result.departureTimestamp < sectionEndTimestamp;
+    const liveDataForDay =
+      liveData != null ? liveData.filter(resultWithinSection) : [];
     return { ...section, data: mergeData(section.data, liveDataForDay) };
   });
-};
