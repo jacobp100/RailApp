@@ -1,5 +1,4 @@
 import { NativeModules } from "react-native";
-import { sortBy } from "lodash/fp";
 import { serviceStatus, departureStatus } from "./resultUtil";
 
 // (Hopefully) handles BST (assumg BST locale)
@@ -18,7 +17,7 @@ const resultFor = async (
 ) => {
   const dateObj = new Date(2018, 0, date + 1);
   const day = (dateObj.getDay() + 6) % 7;
-  const unsortedResults = await NativeModules.RouteReader.getData({
+  const unformattedResults = await NativeModules.RouteReader.getData({
     day,
     date,
     startStation,
@@ -49,10 +48,7 @@ const resultFor = async (
     serviceStatus: { type: serviceStatus.OFFLINE }
   });
 
-  results = sortBy(
-    ["departureTimestamp", "arrivalTimestamp"],
-    unsortedResults.map(formatResult)
-  );
+  results = unformattedResults.map(formatResult);
 
   return { timestamp: dateObj.getTime(), data: results };
 };

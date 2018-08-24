@@ -4,9 +4,9 @@ import { serviceStatus } from "./resultUtil";
 
 const idToCrc = {};
 const crcToId = {};
-stations.forEach(({ id, tla }) => {
-  idToCrc[id] = tla;
-  crcToId[tla] = id;
+stations.forEach(({ id, crc }) => {
+  idToCrc[id] = crc;
+  crcToId[crc] = id;
 });
 
 const token = "d8e6b11e-b942-4941-b42e-f4b16d2c9239";

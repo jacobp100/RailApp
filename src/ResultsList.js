@@ -184,14 +184,15 @@ export default class ResultsList extends Component {
     }
 
     const { now } = this.props;
+    const sections = mergeResults(offlineResults, liveResults);
     const initialScrollIndex = Math.max(
-      offlineResults[0].data.findIndex(d => d.departureTimestamp >= now) - 1,
+      sections[0].data.findIndex(d => d.departureTimestamp > now) - 1,
       0
     );
 
     return (
       <SectionList
-        sections={mergeResults(offlineResults, liveResults)}
+        sections={sections}
         keyExtractor={this.keyExtractor}
         renderSectionHeader={ResultSectionHeader}
         renderItem={this.renderItem}

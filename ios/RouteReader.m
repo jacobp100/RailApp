@@ -53,7 +53,7 @@ RCT_EXPORT_MODULE()
     [stops addObject:[self encodeStop:obj]];
   }];
   return @{
-           @"id": route.id_p,
+           @"routeId": route.routeId,
            @"operatingDays": @(route.operatingDays),
            @"dateFrom": @(route.dateFrom),
            @"dateTo": @(route.dateTo),
@@ -86,18 +86,20 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
   NSArray<Data_Route *> *routes = data.routesArray;
   NSInteger routesCount = [routes count];
 
+  NSLog(@"%@", routes.lastObject);
+
   NSMutableArray *routesJson = [NSMutableArray array];
   NSMutableSet *addedRouteIds = [NSMutableSet set];
   for (NSInteger routeIndex = routesCount - 1; routeIndex >= 0; routeIndex -= 1) {
     Data_Route *route = routes[routeIndex];
 
     if (
-        route.operatingDays & day &&
+        (route.operatingDays & day) &&
         route.dateFrom <= date &&
         route.dateTo >= date &&
-        ![addedRouteIds containsObject:route.id_p]
+        ![addedRouteIds containsObject:route.routeId]
     ) {
-      [addedRouteIds addObject:route.id_p];
+      [addedRouteIds addObject:route.routeId];
 
       NSInteger i = 0;
       NSInteger count = route.stopsArray.count;

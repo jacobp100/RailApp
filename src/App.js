@@ -14,8 +14,6 @@ import SearchResults from "./SearchResults";
 import DatePickerModal from "./DatePickerModal";
 import everyInterval from "./everyInterval";
 
-import stations from "../stations.json";
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -8,7 +8,7 @@ import SearchItem from "./SearchItem";
 const keyExtractor = item => String(item.id);
 
 const scorer = (search, choice, options) =>
-  choice.tla === search.toUpperCase()
+  choice.crc === search.toUpperCase()
     ? 100
     : fuzzball.WRatio(search, choice.name, options);
 
