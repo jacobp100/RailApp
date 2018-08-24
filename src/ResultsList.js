@@ -6,7 +6,7 @@ import ResultItem, { itemHeight, separatorTypes } from "./ResultItem";
 import ResultSectionHeader from "./ResultSectionHeader";
 import fetchLiveResults from "./fetchLiveResults";
 import fetchOfflineResults from "./fetchOfflineResults";
-import { isDeparted, mergeResults } from "./resultUtil";
+import { isScheduledDeparted, isDeparted, mergeResults } from "./resultUtil";
 
 const resultsList = StyleSheet.create({
   spinner: {
@@ -127,13 +127,13 @@ export default class ResultsList extends Component {
 
   renderItem = ({ item, index, section }) => {
     const { now } = this.props;
-    const departed = isDeparted(now, item);
+    const scheduledDeparted = isScheduledDeparted(now, item);
     const previousItem = index > 0 ? section.data[index - 1] : null;
     const previousItemDeparted =
-      previousItem != null ? isDeparted(now, previousItem) : true;
+      previousItem != null ? isScheduledDeparted(now, previousItem) : true;
 
     let separatorType =
-      index === 0 || departed || previousItemDeparted
+      index === 0 || scheduledDeparted || previousItemDeparted
         ? separatorTypes.NONE
         : separatorTypes.DEFAULT;
 
@@ -162,7 +162,7 @@ export default class ResultsList extends Component {
         departurePlatform={item.departurePlatform}
         arrivalPlatform={item.arrivalPlatform}
         serviceStatus={item.serviceStatus}
-        departed={departed}
+        departed={isDeparted(now, item)}
         separatorType={separatorType}
       />
     );

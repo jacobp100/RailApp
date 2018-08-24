@@ -1,6 +1,6 @@
 import parser from "fast-xml-parser";
 import stations from "../stations.json";
-import { serviceStatus } from "./resultUtil";
+import { departureStatus, serviceStatus } from "./resultUtil";
 
 const idToCrc = {};
 const crcToId = {};
@@ -33,18 +33,21 @@ const getTime = str => {
 
 const safeString = s => (s != null ? String(s) : null);
 
-const parseService = ({
-  "lt4:serviceID": serviceId,
-  "lt4:std": std,
-  "lt4:etd": etd,
-  "lt4:platform": platformString,
-  "lt5:origin": {
-    "lt4:location": { "lt4:crs": originCrs }
-  },
-  "lt5:destination": {
-    "lt4:location": { "lt4:crs": destinationCrs }
+const parseService = (
+  timestamp,
+  {
+    "lt4:serviceID": serviceId,
+    "lt4:std": std,
+    "lt4:etd": etd,
+    "lt4:platform": platformString,
+    "lt5:origin": {
+      "lt4:location": { "lt4:crs": originCrs }
+    },
+    "lt5:destination": {
+      "lt4:location": { "lt4:crs": destinationCrs }
+    }
   }
-}) => {
+) => {
   const routeOrigin = crcToId[originCrs];
   const routeDestination = crcToId[destinationCrs];
   const departureTimestamp = getTime(std);
@@ -56,6 +59,10 @@ const parseService = ({
       routeDestination,
       departureTimestamp,
       departurePlatform,
+      departureStatus:
+        departureTimestamp >= timestamp
+          ? departureStatus.DEPARTED
+          : departureStatus.NOT_DEPARTED,
       serviceStatus: { type: serviceStatus.ON_TIME }
     };
   } else if (etd === "Delayed") {
@@ -65,6 +72,7 @@ const parseService = ({
       routeDestination,
       departureTimestamp,
       departurePlatform,
+      departureStatus: departureStatus.NOT_DEPARTED,
       serviceStatus: { type: serviceStatus.DELAYED }
     };
   } else if (etd === "Cancelled") {
@@ -74,6 +82,7 @@ const parseService = ({
       routeDestination,
       departureTimestamp,
       departurePlatform: null,
+      departureStatus: departureStatus.DEPARTED,
       serviceStatus: { type: serviceStatus.CANCELLED }
     };
   } else if (getTime(etd) != null) {
@@ -83,6 +92,7 @@ const parseService = ({
       routeDestination,
       departureTimestamp,
       departurePlatform,
+      departureStatus: departureStatus.DEPARTED,
       serviceStatus: {
         type: serviceStatus.DELAYED_BY,
         by: getTime(etd) - getTime(std)
@@ -93,7 +103,7 @@ const parseService = ({
   }
 };
 
-export default async (from, to) => {
+export default async (from, to, timestamp) => {
   const query = `
     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
       <soap:Header>
@@ -129,5 +139,5 @@ export default async (from, to) => {
     tree["soap:Envelope"]["soap:Body"].GetDepartureBoardResponse
       .GetStationBoardResult["lt5:trainServices"]["lt5:service"];
 
-  return services.map(parseService);
+  return services.map(service => parseService(timestamp, service));
 };

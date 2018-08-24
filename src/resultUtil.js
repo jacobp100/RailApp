@@ -14,10 +14,13 @@ export const serviceStatus = {
   CANCELLED: 4
 };
 
+export const isScheduledDeparted = (timestamp, result) =>
+  result.departureTimestamp <= timestamp;
+
 export const isDeparted = (timestamp, result) => {
   switch (result.departureStatus) {
     case departureStatus.UNKNOWN:
-      return result.departureTimestamp <= timestamp;
+      return isScheduledDeparted(timestamp, result);
     case departureStatus.NOT_DEPARTED:
       return false;
     case departureStatus.DEPARTED:
