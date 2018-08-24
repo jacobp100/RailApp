@@ -66,13 +66,14 @@ export const mergeResults = (atocSections, liveData) => {
     return atocSections;
   }
 
+  const DAY = 24 * 60 * 60 * 1000;
   return atocSections.map(section => {
     const sectionStartTimestamp = section.timestamp;
-    const sectionEndTimestamp = sectionStartTimestamp + 24 * 60 * 60 * 1000;
+    const sectionEndTimestamp = sectionStartTimestamp + DAY;
     const liveDataForDay = liveData.filter(
       result =>
         result.departureTimestamp >= sectionStartTimestamp &&
-        result.departureTimestamp <= sectionEndTimestamp
+        result.departureTimestamp < sectionEndTimestamp
     );
     return { ...section, data: mergeData(section.data, liveDataForDay) };
   });
