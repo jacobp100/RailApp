@@ -3,8 +3,14 @@ import fetchLiveResults from "./fetchLiveResults";
 
 const LiveResultsContext = React.createContext(null);
 
+export const fetchStatus = {
+  NOT_FETCHING: 0,
+  IN_PROGRESS: 1,
+  FAILED: 2
+};
+
 export class LiveResultsProvider extends Component {
-  state = { liveResults: null };
+  state = { liveResults: null, status: fetchStatus.NOT_FETCHING };
 
   queue = Promise.resolve();
 
@@ -28,13 +34,27 @@ export class LiveResultsProvider extends Component {
       const { to, from, now } = this.props;
       if (to != null && from != null) {
         try {
-          const liveResults = await fetchLiveResults(to, from, now);
-          if (!this.unmounted) this.setState({ liveResults });
+          this.setState({ fetchStatus: fetchStatus.IN_PROGRESS });
+          let liveResults = null;
+          try {
+            liveResults = await fetchLiveResults(to, from, now);
+          } catch (e) {}
+
+          this.setState({
+            liveResults,
+            fetchStatus:
+              liveResults != null
+                ? fetchStatus.NOT_FETCHING
+                : fetchStatus.FAILED,
+            lastFetch: Date.now()
+          });
         } catch (e) {}
       } else {
-        this.setState(
-          s => (s.liveResults != null ? { liveResults: null } : null)
-        );
+        this.setState({
+          liveResults: null,
+          fetchStatus: fetchStatus.NOT_FETCHING,
+          lastFetch: Date.now()
+        });
       }
     });
     return this.queue;
@@ -45,6 +65,7 @@ export class LiveResultsProvider extends Component {
       <LiveResultsContext.Provider
         value={{
           liveResults: this.state.liveResults,
+          fetchStatus: this.state.fetchStatus,
           fetchLiveResults: this.fetchLiveResults
         }}
       >
