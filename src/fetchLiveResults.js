@@ -60,7 +60,7 @@ const parseService = (
       departureTimestamp,
       departurePlatform,
       departureStatus:
-        departureTimestamp >= timestamp
+        departureTimestamp <= timestamp
           ? departureStatus.DEPARTED
           : departureStatus.NOT_DEPARTED,
       serviceStatus: { type: serviceStatus.ON_TIME }
@@ -86,16 +86,20 @@ const parseService = (
       serviceStatus: { type: serviceStatus.CANCELLED }
     };
   } else if (getTime(etd) != null) {
+    const actualDepartureTimestamp = getTime(etd);
     return {
       serviceId,
       routeOrigin,
       routeDestination,
       departureTimestamp,
       departurePlatform,
-      departureStatus: departureStatus.DEPARTED,
+      departureStatus:
+        actualDepartureTimestamp <= timestamp
+          ? departureStatus.DEPARTED
+          : departureStatus.NOT_DEPARTED,
       serviceStatus: {
         type: serviceStatus.DELAYED_BY,
-        by: getTime(etd) - getTime(std)
+        until: actualDepartureTimestamp
       }
     };
   } else {

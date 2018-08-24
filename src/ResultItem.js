@@ -13,16 +13,22 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   containerInactive: {
-    backgroundColor: "#E5E5E5", // Adjusted for opacity
-    opacity: 0.5
+    // Can't put opacity here, because of separator
+    backgroundColor: "#F2F2F2"
   },
   rowContainer: {
     flexDirection: "row"
+  },
+  rowContainerInactive: {
+    opacity: 0.5
   },
   time: {
     marginRight: 9,
     fontWeight: "500",
     fontVariant: ["tabular-nums"]
+  },
+  timeFucked: {
+    color: "#EA2027"
   },
   platform: {
     color: "#BABABA",
@@ -112,8 +118,15 @@ export const separatorTypes = {
   CURRENT_TIME: 2
 };
 
+const fuckedTypes = new Set([
+  serviceStatus.DELAYED_BY,
+  serviceStatus.DELAYED,
+  serviceStatus.CANCELLED
+]);
+const isFucked = ({ type }) => fuckedTypes.has(type);
+
 const ServiceStatus = props => {
-  switch (props.type) {
+  switch (props.serviceStatus.type) {
     case serviceStatus.OFFLINE:
       return (
         <Image
@@ -123,15 +136,17 @@ const ServiceStatus = props => {
       );
     case serviceStatus.ON_TIME:
       return <View style={service.onTimeEmblem} />;
-    case serviceStatus.DELAYED_BY:
+    case serviceStatus.DELAYED_BY: {
+      const by = Math.floor(
+        (props.serviceStatus.until - props.departureTimestamp) / 6000
+      );
       return (
         <React.Fragment>
-          <Text style={service.delayedTitle}>
-            {Math.floor(props.by / 60000)} mins late
-          </Text>
+          <Text style={service.delayedTitle}>{by} mins late</Text>
           <View style={service.delayedEmblem} />
         </React.Fragment>
       );
+    }
     case serviceStatus.DELAYED:
       return (
         <React.Fragment>
@@ -150,6 +165,42 @@ const ServiceStatus = props => {
       return null;
   }
 };
+
+// const Row = ({
+//   timestamp,
+//   station,
+//   platform,
+//   serviceStatus,
+//   lowerAttachment
+// }) => (
+//   <View
+//     style={StyleSheet.compose(
+//       styles.rowContainer,
+//       departed && styles.rowContainerInactive
+//     )}
+//   >
+//     <Text
+//       style={StyleSheet.compose(
+//         styles.time,
+//         !departed && isFucked(serviceStatus) && styles.timeFucked
+//       )}
+//     >
+//       {formatTimestampTime(timestamp)}
+//     </Text>
+//     <View style={styles.locationPlatformContainer}>
+//       <Text>{station}</Text>
+//       <View style={styles.arrivalPlatformStatusContainer}>
+//         <Text style={styles.platform}>
+//           {platform
+//             ? `Platform ${platform} (to be confirmed)`
+//             : "No platform information"}
+//         </Text>
+//         {lowerAttachment}
+//       </View>
+//       {upperAttachment}
+//     </View>
+//   </View>
+// );
 
 export default ({
   to,
@@ -176,8 +227,20 @@ export default ({
         <View style={separator.line} />
       </View>
     ) : null}
-    <View style={styles.rowContainer}>
-      <Text style={styles.time}>{formatTimestampTime(departureTimestamp)}</Text>
+    <View
+      style={StyleSheet.compose(
+        styles.rowContainer,
+        departed && styles.rowContainerInactive
+      )}
+    >
+      <Text
+        style={StyleSheet.compose(
+          styles.time,
+          !departed && isFucked(serviceStatus) && styles.timeFucked
+        )}
+      >
+        {formatTimestampTime(departureTimestamp)}
+      </Text>
       <View style={styles.locationPlatformContainer}>
         <Text>{from}</Text>
         <Text style={styles.platform}>
@@ -193,8 +256,20 @@ export default ({
         <Text style={styles.journeyTimeUnit}>MIN</Text>
       </View>
     </View>
-    <View style={styles.rowContainer}>
-      <Text style={styles.time}>{formatTimestampTime(arrivalTimestamp)}</Text>
+    <View
+      style={StyleSheet.compose(
+        styles.rowContainer,
+        departed && styles.rowContainerInactive
+      )}
+    >
+      <Text
+        style={StyleSheet.compose(
+          styles.time,
+          !departed && isFucked(serviceStatus) && styles.timeFucked
+        )}
+      >
+        {formatTimestampTime(arrivalTimestamp)}
+      </Text>
       <View style={styles.locationPlatformContainer}>
         <Text>{to}</Text>
         <View style={styles.arrivalPlatformStatusContainer}>
@@ -203,7 +278,10 @@ export default ({
               ? `Platform ${arrivalPlatform} (to be confirmed)`
               : "No platform information"}
           </Text>
-          <ServiceStatus {...serviceStatus} />
+          <ServiceStatus
+            serviceStatus={serviceStatus}
+            departureTimestamp={departureTimestamp}
+          />
         </View>
       </View>
     </View>

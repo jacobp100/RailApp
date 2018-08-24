@@ -116,7 +116,7 @@ export default class ResultsList extends Component {
         fetchOfflineResults(from, to, timestamp).then(offlineResults =>
           setStateIfUnchanged({ offlineResults })
         ),
-        fetchLiveResults(from, to).then(liveResults =>
+        fetchLiveResults(from, to, timestamp).then(liveResults =>
           setStateIfUnchanged({ liveResults })
         )
       ])
