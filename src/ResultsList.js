@@ -70,9 +70,9 @@ export default class ResultsList extends Component {
   }
 
   fetchOfflineResultsIfNeeded() {
-    const { from, to, timestamp, now } = this.props;
+    const { from, to, timestamp } = this.props;
     try {
-      const offlineResults = getOfflineResults({ from, to, timestamp, now });
+      const offlineResults = getOfflineResults({ from, to, timestamp });
       this.setState(
         state =>
           state.offlineResults !== offlineResults

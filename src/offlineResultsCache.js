@@ -1,7 +1,7 @@
 import fetchOfflineResults from "./fetchOfflineResults";
 
 export default ({ refreshThreshold }) => {
-  let args = { from: null, to: null, timestamp: NaN, now: NaN };
+  let args = { from: null, to: null, timestamp: NaN };
   let results = null;
   let queue = Promise.resolve();
 

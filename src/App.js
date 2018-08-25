@@ -8,11 +8,13 @@ import {
   AppState
 } from "react-native";
 import Input, { inputs } from "./Input";
+import TimeMonitor from "./TimeMonitor";
+import DatePicker from "./DatePicker";
+import Refresh from "./Refresh";
 import EmptyList from "./EmptyList";
 import { LiveResultsProvider } from "./LiveResults";
 import ResultsList from "./ResultsList";
 import SearchResults from "./SearchResults";
-import DatePickerModal from "./DatePickerModal";
 import everyInterval from "./everyInterval";
 
 const styles = StyleSheet.create({
@@ -23,83 +25,28 @@ const styles = StyleSheet.create({
   toolbar: {
     flexDirection: "row",
     top: -12,
-    paddingHorizontal: 48
+    paddingLeft: 48,
+    paddingRight: 29
   },
-  pickDate: {
-    color: "#BABABA",
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 0.8
-  },
-  clear: {
-    marginLeft: 6
-  },
-  hidden: {
-    display: "none"
+  pullRight: {
+    marginLeft: "auto"
   }
 });
 
-const MIN = 60 * 1000;
-
 export default class App extends Component {
   state = {
-    // from: null,
-    // to: null,
-    from: require("../stations.json").find(s => s.crc === "WAT").id,
-    to: require("../stations.json").find(s => s.crc === "SUR").id,
-    now: Math.floor(Date.now() / MIN) * MIN,
+    from: null,
+    to: null,
+    // from: require("../stations.json").find(s => s.crc === "WAT").id,
+    // to: require("../stations.json").find(s => s.crc === "SUR").id,
+    now: TimeMonitor.now(),
     customTimestamp: null,
     search: "",
     activeInput: inputs.NONE
   };
 
-  componentDidMount() {
-    this.startMonitoringTime();
-    AppState.addEventListener("change", this.handleAppStateChange);
-  }
-
-  componentWillUnmount() {
-    this.stopMonitoringTime();
-    AppState.removeEventListener("change", this.handleAppStateChange);
-  }
-
-  handleAppStateChange = nextAppState => {
-    if (nextAppState === "active") {
-      this.setState({ now: Math.floor(Date.now() / MIN) * MIN });
-      this.startMonitoringTime();
-    } else {
-      this.stopMonitoringTime();
-    }
-  };
-
-  intervalHandle = null;
-  startMonitoringTime() {
-    if (this.intervalHandle == null) {
-      this.intervalHandle = everyInterval(this.updateNow, MIN);
-    }
-  }
-  stopMonitoringTime() {
-    if (this.intervalHandle != null) {
-      this.intervalHandle();
-      this.intervalHandle = null;
-    }
-  }
-  updateNow = now => this.setState({ now });
-
-  datePicker = React.createRef();
-  showDatePicker = () => {
-    const { customTimestamp } = this.state;
-    this.datePicker.current
-      .open({
-        date: customTimestamp != null ? new Date(customTimestamp) : new Date()
-      })
-      .then(
-        date => this.setState({ customTimestamp: date.getTime() }),
-        () => {}
-      );
-  };
-
-  clearCustomDate = () => this.setState({ customTimestamp: null });
+  setNow = now => this.setState({ now });
+  setDate = customTimestamp => this.setState({ customTimestamp });
 
   switchLocations = () =>
     this.setState(s => ({
@@ -121,8 +68,10 @@ export default class App extends Component {
 
   render() {
     const { from, to, customTimestamp, now, activeInput, search } = this.state;
+    const timestamp = customTimestamp != null ? customTimestamp : now;
     return (
-      <LiveResultsProvider from={from} to={to} now={now}>
+      <LiveResultsProvider from={from} to={to} timestamp={timestamp} now={now}>
+        <TimeMonitor onTimeChanged={this.setNow} />
         <View style={styles.container}>
           <Input
             from={from}
@@ -133,41 +82,19 @@ export default class App extends Component {
             onSwitch={this.switchLocations}
           />
           <View style={styles.toolbar}>
-            <TouchableOpacity onPress={this.showDatePicker}>
-              <Text style={styles.pickDate}>
-                {customTimestamp == null ? "SET TIME" : "CUSTOM TIME SET"}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={customTimestamp == null && styles.hidden}
-              onPress={this.clearCustomDate}
-            >
-              <Image
-                source={require("../assets/Cancel.png")}
-                style={styles.clear}
-              />
-            </TouchableOpacity>
+            <DatePicker value={customTimestamp} onDateChanged={this.setDate} />
+            <Refresh now={now} style={styles.pullRight} />
           </View>
           {activeInput !== inputs.NONE ? (
             <SearchResults search={search} onSelect={this.setSearchResult} />
           ) : from != null && to != null ? (
-            <ResultsList
-              from={from}
-              to={to}
-              timestamp={customTimestamp != null ? customTimestamp : now}
-              now={now}
-            />
+            <ResultsList from={from} to={to} timestamp={timestamp} now={now} />
           ) : (
             <EmptyList
               title="To Get Started"
               body="Fill in the ‘from’ and ‘to’ fields above to search for trains"
             />
           )}
-          <DatePickerModal
-            ref={this.datePicker}
-            mode="datetime"
-            minuteInterval={5}
-          />
         </View>
       </LiveResultsProvider>
     );

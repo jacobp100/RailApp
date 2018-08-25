@@ -6,13 +6,16 @@ const LiveResultsContext = React.createContext(null);
 export const fetchStatus = {
   NOT_FETCHING: 0,
   IN_PROGRESS: 1,
-  FAILED: 2
+  FAILED: 2,
+  UNAVAILABLE: 3
 };
 
 export class LiveResultsProvider extends Component {
-  state = { liveResults: null, status: fetchStatus.NOT_FETCHING };
-
-  queue = Promise.resolve();
+  state = {
+    liveResults: null,
+    fetchStatus: fetchStatus.NOT_FETCHING,
+    lastFetch: null
+  };
 
   componentDidMount() {
     this.fetchLiveResults();
@@ -29,12 +32,19 @@ export class LiveResultsProvider extends Component {
     }
   }
 
-  fetchLiveResults() {
+  queue = Promise.resolve();
+  fetchLiveResults = () => {
     this.queue = this.queue.then(async () => {
-      const { to, from, now } = this.props;
-      if (to != null && from != null) {
+      const { to, from, timestamp, now } = this.props;
+      const within15MinsOfNow =
+        Math.abs(Date.now() - timestamp) <= 15 * 60 * 1000;
+
+      if (to != null && from != null && within15MinsOfNow) {
         try {
-          this.setState({ fetchStatus: fetchStatus.IN_PROGRESS });
+          this.setState({
+            liveResults: null,
+            fetchStatus: fetchStatus.IN_PROGRESS
+          });
           let liveResults = null;
           try {
             liveResults = await fetchLiveResults(to, from, now);
@@ -52,13 +62,13 @@ export class LiveResultsProvider extends Component {
       } else {
         this.setState({
           liveResults: null,
-          fetchStatus: fetchStatus.NOT_FETCHING,
+          fetchStatus: fetchStatus.UNAVAILABLE,
           lastFetch: Date.now()
         });
       }
     });
     return this.queue;
-  }
+  };
 
   render() {
     return (
@@ -66,6 +76,7 @@ export class LiveResultsProvider extends Component {
         value={{
           liveResults: this.state.liveResults,
           fetchStatus: this.state.fetchStatus,
+          lastFetch: this.state.lastFetch,
           fetchLiveResults: this.fetchLiveResults
         }}
       >
