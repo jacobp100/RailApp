@@ -11,6 +11,20 @@ stations.forEach(({ id, crc }) => {
 
 const token = "d8e6b11e-b942-4941-b42e-f4b16d2c9239";
 
+const soapRequest = async query => {
+  const res = await fetch(
+    "https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb9.asmx",
+    {
+      method: "POST",
+      headers: { "Content-Type": "text/xml" },
+      body: query.trim()
+    }
+  );
+  const text = await res.text();
+  const tree = parser.parse(text);
+  return tree;
+};
+
 const getTime = str => {
   if (str != null && str.includes(":")) {
     const [h, m] = str.split(":");
@@ -31,10 +45,14 @@ const getTime = str => {
   }
 };
 
+const DAY = 24 * 60 * 60 * 1000;
+const adjustTimeIfBefore = (relativeTo, date) =>
+  date < relativeTo ? date + DAY : date;
+
 const safeString = s => (s != null ? String(s) : null);
 
-const parseService = (
-  timestamp,
+const parseDepartureBoardService = (
+  now,
   {
     "lt4:serviceID": serviceId,
     "lt4:std": std,
@@ -58,11 +76,13 @@ const parseService = (
       routeOrigin,
       routeDestination,
       departureTimestamp,
-      departurePlatform,
+      arrivalTimestamp: NaN,
       departureStatus:
-        departureTimestamp <= timestamp
+        departureTimestamp <= now
           ? departureStatus.DEPARTED
           : departureStatus.NOT_DEPARTED,
+      departurePlatform,
+      arrivalPlatform: null,
       serviceStatus: { type: serviceStatus.ON_TIME }
     };
   } else if (etd === "Delayed") {
@@ -71,8 +91,10 @@ const parseService = (
       routeOrigin,
       routeDestination,
       departureTimestamp,
-      departurePlatform,
+      arrivalTimestamp: NaN,
       departureStatus: departureStatus.NOT_DEPARTED,
+      departurePlatform,
+      arrivalPlatform: null,
       serviceStatus: { type: serviceStatus.DELAYED }
     };
   } else if (etd === "Cancelled") {
@@ -81,38 +103,40 @@ const parseService = (
       routeOrigin,
       routeDestination,
       departureTimestamp,
-      departurePlatform: null,
+      arrivalTimestamp: NaN,
       departureStatus: departureStatus.DEPARTED,
+      departurePlatform: null,
+      arrivalPlatform: null,
       serviceStatus: { type: serviceStatus.CANCELLED }
     };
   } else if (getTime(etd) != null) {
-    let actualDepartureTimestamp = getTime(etd);
-    if (actualDepartureTimestamp < departureTimestamp) {
-      const DAY = 24 * 60 * 60 * 1000;
-      actualDepartureTimestamp += DAY;
-    }
+    const actualDepartureTimestamp = adjustTimeIfBefore(
+      departureTimestamp,
+      getTime(etd)
+    );
     return {
       serviceId,
       routeOrigin,
       routeDestination,
       departureTimestamp,
-      departurePlatform,
+      arrivalTimestamp: NaN,
       departureStatus:
-        actualDepartureTimestamp <= timestamp
+        actualDepartureTimestamp <= now
           ? departureStatus.DEPARTED
           : departureStatus.NOT_DEPARTED,
+      departurePlatform,
+      arrivalPlatform: null,
       serviceStatus: {
         type: serviceStatus.DELAYED_BY,
         until: actualDepartureTimestamp
       }
     };
-  } else {
-    return null;
   }
+  return null;
 };
 
-export default async (from, to, timestamp) => {
-  const query = `
+export const fetchLiveResults = async (from, to, now) => {
+  const tree = await soapRequest(`
     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
       <soap:Header>
         <typ:AccessToken>
@@ -130,22 +154,61 @@ export default async (from, to, timestamp) => {
         </ldb:GetDepartureBoardRequest>
       </soap:Body>
     </soap:Envelope>
-  `.trim();
-
-  const res = await fetch(
-    "https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb9.asmx",
-    {
-      method: "POST",
-      headers: { "Content-Type": "text/xml" },
-      body: query
-    }
-  );
-  const text = await res.text();
-  const tree = parser.parse(text);
+  `);
 
   const services =
     tree["soap:Envelope"]["soap:Body"].GetDepartureBoardResponse
       .GetStationBoardResult["lt5:trainServices"]["lt5:service"];
 
-  return services.map(service => parseService(timestamp, service));
+  return services.map(service => parseDepartureBoardService(now, service));
+};
+
+const parseStatusService = (
+  now,
+  service,
+  { "lt4:st": standardTime, "lt4:et": estimatedTime }
+) => {
+  if (estimatedTime === "On time") {
+    const arrivalTimestamp = adjustTimeIfBefore(
+      service.departureTimestamp,
+      getTime(standardTime)
+    );
+    return { ...service, arrivalTimestamp };
+  } else if (getTime(estimatedTime) != null) {
+    const arrivalTimestamp = adjustTimeIfBefore(
+      service.departureTimestamp,
+      getTime(estimatedTime)
+    );
+    return { ...service, arrivalTimestamp };
+  }
+  return service;
+};
+
+export const fetchLiveResult = async (from, to, now, service) => {
+  const tree = await soapRequest(`
+    <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
+      <soap:Header>
+        <typ:AccessToken>
+          <typ:TokenValue>${token}</typ:TokenValue>
+        </typ:AccessToken>
+      </soap:Header>
+      <soap:Body>
+        <ldb:GetServiceDetailsRequest>
+          <ldb:serviceID>${service.serviceId}</ldb:serviceID>
+        </ldb:GetServiceDetailsRequest>
+      </soap:Body>
+    </soap:Envelope>
+  `);
+
+  let services =
+    tree["soap:Envelope"]["soap:Body"].GetServiceDetailsResponse
+      .GetServiceDetailsResult["lt4:subsequentCallingPoints"][
+      "lt4:callingPointList"
+    ]["lt4:callingPoint"];
+  services = Array.isArray(services) ? services : [services];
+  const crc = idToCrc[to];
+  const arrivalService = services.find(r => r["lt4:crs"] === crc);
+  return arrivalService != null
+    ? parseStatusService(now, service, arrivalService)
+    : service;
 };

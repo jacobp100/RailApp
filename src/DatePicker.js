@@ -41,7 +41,7 @@ export default class DatePicker extends Component {
       .then(date => this.props.onDateChanged(date.getTime()), () => {});
   };
 
-  clearCustomDate = () => this.onDateChanged(null);
+  clearCustomDate = () => this.props.onDateChanged(null);
 
   render() {
     const { value } = this.props;

@@ -1,5 +1,5 @@
 import React, { Component, Children } from "react";
-import fetchLiveResults from "./fetchLiveResults";
+import { fetchLiveResults, fetchLiveResult } from "./fetchLiveResults";
 
 const LiveResultsContext = React.createContext(null);
 
@@ -9,6 +9,9 @@ export const fetchStatus = {
   FAILED: 2,
   UNAVAILABLE: 3
 };
+
+const canFetchLiveResults = timestamp =>
+  Math.abs(Date.now() - timestamp) <= 15 * 60 * 1000;
 
 export class LiveResultsProvider extends Component {
   state = {
@@ -27,7 +30,12 @@ export class LiveResultsProvider extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.to !== this.props.to || prevProps.from !== this.props.from) {
+    if (
+      prevProps.to !== this.props.to ||
+      prevProps.from !== this.props.from ||
+      canFetchLiveResults(prevProps.timestamp) !==
+        canFetchLiveResults(this.props.timestamp)
+    ) {
       this.fetchLiveResults();
     }
   }
@@ -36,10 +44,12 @@ export class LiveResultsProvider extends Component {
   fetchLiveResults = () => {
     this.queue = this.queue.then(async () => {
       const { to, from, timestamp, now } = this.props;
-      const within15MinsOfNow =
-        Math.abs(Date.now() - timestamp) <= 15 * 60 * 1000;
 
-      if (to != null && from != null && within15MinsOfNow) {
+      if (
+        to != null &&
+        from != null &&
+        canFetchLiveResults(this.props.timestamp)
+      ) {
         try {
           this.setState({
             liveResults: null,
@@ -58,6 +68,8 @@ export class LiveResultsProvider extends Component {
                 : fetchStatus.FAILED,
             lastFetch: Date.now()
           });
+
+          this.enhanceLiveResults(to, from, now, liveResults);
         } catch (e) {}
       } else {
         this.setState({
@@ -69,6 +81,20 @@ export class LiveResultsProvider extends Component {
     });
     return this.queue;
   };
+
+  async enhanceLiveResults(to, from, now, liveResults) {
+    try {
+      const enhancedLiveResults = await Promise.all(
+        liveResults.map(service => fetchLiveResult(to, from, now, service))
+      );
+      this.setState(
+        s =>
+          s.liveResults === liveResults
+            ? { liveResults: enhancedLiveResults }
+            : null
+      );
+    } catch (e) {}
+  }
 
   render() {
     return (
