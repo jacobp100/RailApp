@@ -48,11 +48,7 @@ export default class App extends Component {
   setNow = now => this.setState({ now });
   setDate = customTimestamp => this.setState({ customTimestamp });
 
-  switchLocations = () =>
-    this.setState(s => ({
-      to: s.from,
-      from: s.to
-    }));
+  switchLocations = () => this.setState(s => ({ to: s.from, from: s.to }));
 
   setActiveInput = activeInput => this.setState({ activeInput, search: "" });
   setSearch = search => this.setState({ search });

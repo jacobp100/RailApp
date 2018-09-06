@@ -12,7 +12,7 @@ const layoutStyles = StyleSheet.create({
   }
 });
 
-export default (Layout = ({ style, topInput, bottomInput, attachment }) => (
+export default ({ style, topInput, bottomInput, attachment }) => (
   <View
     style={StyleSheet.compose(
       layoutStyles.container,
@@ -25,4 +25,4 @@ export default (Layout = ({ style, topInput, bottomInput, attachment }) => (
     </View>
     {attachment}
   </View>
-));
+);
