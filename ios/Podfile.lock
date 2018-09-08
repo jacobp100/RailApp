@@ -1,16 +1,24 @@
 PODS:
+  - DataCompression (2.0.1)
   - Protobuf (3.6.0)
+  - SwiftFlatBuffers (1.2.2)
 
 DEPENDENCIES:
+  - DataCompression
   - Protobuf (~> 3.6)
+  - SwiftFlatBuffers
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
+    - DataCompression
     - Protobuf
+    - SwiftFlatBuffers
 
 SPEC CHECKSUMS:
+  DataCompression: 2ee34bbd53d55c37c529785643b6c208f7c87919
   Protobuf: 0fc0ad8bec688b2a3017a139953e01374fedbd5f
+  SwiftFlatBuffers: 6ed760b01b0dd193fe59c56ec32ecdd183aa9e29
 
-PODFILE CHECKSUM: 136a896728d843e05c9cb69e5915d1c75e383c4b
+PODFILE CHECKSUM: 1babab7b47623b6511685df4e10842784cd19394
 
 COCOAPODS: 1.5.3

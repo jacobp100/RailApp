@@ -21,6 +21,10 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		160A60F7211E063E00EC9826 /* RouteReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 160A60F6211E063E00EC9826 /* RouteReader.m */; };
+		169A4BD02143D2E300E340FD /* RailAppBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 169A4BCF2143D2E300E340FD /* RailAppBridge.m */; };
+		16E694A521431836007CE94E /* ttisf989.fb.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 16E6947F21431836007CE94E /* ttisf989.fb.lzfse */; };
+		16E694D921431FE3007CE94E /* types_generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E694D821431FE3007CE94E /* types_generated.swift */; };
+		16E694DB21431FF1007CE94E /* RouteReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E694DA21431FF1007CE94E /* RouteReader.swift */; };
 		16EA3556211F0C7300ECB039 /* Types.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 16EA3555211F0C7300ECB039 /* Types.pbobjc.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		16EA3559211F1B8700ECB039 /* ttisf989.pr.lzfse in Resources */ = {isa = PBXBuildFile; fileRef = 16EA3558211F1B7900ECB039 /* ttisf989.pr.lzfse */; };
 		16EA355C211F21B700ECB039 /* NSData+LAMCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 16EA355B211F21B700ECB039 /* NSData+LAMCompression.m */; };
@@ -314,6 +318,11 @@
 		146833FF1AC3E56700842450 /* React.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = React.xcodeproj; path = "../node_modules/react-native/React/React.xcodeproj"; sourceTree = "<group>"; };
 		160A60F5211E063400EC9826 /* RouteReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RouteReader.h; sourceTree = "<group>"; };
 		160A60F6211E063E00EC9826 /* RouteReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RouteReader.m; sourceTree = "<group>"; };
+		169A4BCF2143D2E300E340FD /* RailAppBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RailAppBridge.m; sourceTree = "<group>"; };
+		16E6947F21431836007CE94E /* ttisf989.fb.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = ttisf989.fb.lzfse; sourceTree = "<group>"; };
+		16E694B221431FE2007CE94E /* RailApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RailApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		16E694D821431FE3007CE94E /* types_generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = types_generated.swift; sourceTree = "<group>"; };
+		16E694DA21431FF1007CE94E /* RouteReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteReader.swift; sourceTree = "<group>"; };
 		16EA3554211F0C7300ECB039 /* Types.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Types.pbobjc.h; sourceTree = "<group>"; };
 		16EA3555211F0C7300ECB039 /* Types.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Types.pbobjc.m; sourceTree = "<group>"; };
 		16EA3558211F1B7900ECB039 /* ttisf989.pr.lzfse */ = {isa = PBXFileReference; lastKnownFileType = file; path = ttisf989.pr.lzfse; sourceTree = "<group>"; };
@@ -440,6 +449,7 @@
 			isa = PBXGroup;
 			children = (
 				16EA3558211F1B7900ECB039 /* ttisf989.pr.lzfse */,
+				16E6947F21431836007CE94E /* ttisf989.fb.lzfse */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -453,6 +463,10 @@
 				16EA3555211F0C7300ECB039 /* Types.pbobjc.m */,
 				16EA355A211F21B700ECB039 /* NSData+LAMCompression.h */,
 				16EA355B211F21B700ECB039 /* NSData+LAMCompression.m */,
+				16E694D821431FE3007CE94E /* types_generated.swift */,
+				16E694B221431FE2007CE94E /* RailApp-Bridging-Header.h */,
+				169A4BCF2143D2E300E340FD /* RailAppBridge.m */,
+				16E694DA21431FF1007CE94E /* RouteReader.swift */,
 			);
 			name = RailApp;
 			sourceTree = "<group>";
@@ -611,6 +625,7 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = YG77U88R8M;
+						LastSwiftMigration = 0940;
 					};
 				};
 			};
@@ -950,6 +965,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				16EA3559211F1B8700ECB039 /* ttisf989.pr.lzfse in Resources */,
+				16E694A521431836007CE94E /* ttisf989.fb.lzfse in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
@@ -997,11 +1013,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				169A4BD02143D2E300E340FD /* RailAppBridge.m in Sources */,
+				16E694DB21431FF1007CE94E /* RouteReader.swift in Sources */,
 				16EA3556211F0C7300ECB039 /* Types.pbobjc.m in Sources */,
 				16EA355C211F21B700ECB039 /* NSData+LAMCompression.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				160A60F7211E063E00EC9826 /* RouteReader.m in Sources */,
+				16E694D921431FE3007CE94E /* types_generated.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1025,6 +1044,7 @@
 			baseConfigurationReference = 1E82975C112406F61D59177A /* Pods-RailApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = YG77U88R8M;
@@ -1037,6 +1057,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = jacob.railapp;
 				PRODUCT_NAME = RailApp;
+				SWIFT_OBJC_BRIDGING_HEADER = "RailApp-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -1046,6 +1068,7 @@
 			baseConfigurationReference = 6433621C4A8F8E91879A665D /* Pods-RailApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YG77U88R8M;
 				INFOPLIST_FILE = RailApp/Info.plist;
@@ -1057,6 +1080,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = jacob.railapp;
 				PRODUCT_NAME = RailApp;
+				SWIFT_OBJC_BRIDGING_HEADER = "RailApp-Bridging-Header.h";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -1099,6 +1123,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -1133,6 +1158,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_VERSION = 4.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

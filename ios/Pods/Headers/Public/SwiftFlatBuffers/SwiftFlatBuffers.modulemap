@@ -1,0 +1,6 @@
+module SwiftFlatBuffers {
+  umbrella header "SwiftFlatBuffers-umbrella.h"
+
+  export *
+  module * { export * }
+}
