@@ -135,7 +135,7 @@ const parseDepartureBoardService = (
   return null;
 };
 
-export const fetchLiveResults = async ({ from, to, now }) => {
+export const fetchLiveResults = async (from, to, now) => {
   const tree = await soapRequest(`
     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
       <soap:Header>
@@ -184,7 +184,7 @@ const parseStatusService = (
   return service;
 };
 
-export const fetchLiveResult = async ({ from, to, now, service }) => {
+export const fetchLiveResult = async (from, to, now, service) => {
   const tree = await soapRequest(`
     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
       <soap:Header>

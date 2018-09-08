@@ -1,6 +1,0 @@
-module Pods_RailApp {
-  umbrella header "Pods-RailApp-umbrella.h"
-
-  export *
-  module * { export * }
-}

@@ -18,7 +18,7 @@ export default ({ refreshThreshold }) => {
     args = nextArgs;
     queue = queue.then(async () => {
       try {
-        results = await fetchOfflineResults(args);
+        results = await fetchOfflineResults(args.from, args.to, args.timestamp);
       } catch (e) {
         results = null;
       }

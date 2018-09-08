@@ -53,7 +53,7 @@ const resultFor = async (
   return { timestamp: dateObj.getTime(), data: results };
 };
 
-export default async ({ from, to, timestamp }) => {
+export default async (from, to, timestamp) => {
   if (from == null || to == null || timestamp == null) return [];
 
   const MINUTES_BEFORE = 30;

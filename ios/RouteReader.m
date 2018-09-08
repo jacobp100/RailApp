@@ -5,7 +5,7 @@
 #import "RouteReader.h"
 #import "Types.pbobjc.h"
 
-@implementation RouteReaderLegacy
+@implementation RouteReader
 {
   Data * _Nullable dataCache;
 }
@@ -85,6 +85,8 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
 
   NSArray<Data_Route *> *routes = data.routesArray;
   NSInteger routesCount = [routes count];
+
+  NSLog(@"%@", routes.lastObject);
 
   NSMutableArray *routesJson = [NSMutableArray array];
   NSMutableSet *addedRouteIds = [NSMutableSet set];

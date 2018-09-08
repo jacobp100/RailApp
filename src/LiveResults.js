@@ -57,7 +57,7 @@ export class LiveResultsProvider extends Component {
           });
           let liveResults = null;
           try {
-            liveResults = await fetchLiveResults({ from, to, now });
+            liveResults = await fetchLiveResults(to, from, now);
           } catch (e) {}
 
           this.setState({
@@ -85,7 +85,7 @@ export class LiveResultsProvider extends Component {
   async enhanceLiveResults(to, from, now, liveResults) {
     try {
       const enhancedLiveResults = await Promise.all(
-        liveResults.map(service => fetchLiveResult({ from, to, now, service }))
+        liveResults.map(service => fetchLiveResult(to, from, now, service))
       );
       this.setState(
         s =>

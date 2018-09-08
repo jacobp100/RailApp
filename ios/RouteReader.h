@@ -1,5 +1,5 @@
 #import <React/RCTBridgeModule.h>
 
-@interface RouteReaderLegacy : NSObject <RCTBridgeModule>
+@interface RouteReader : NSObject <RCTBridgeModule>
 
 @end
