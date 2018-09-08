@@ -18,14 +18,16 @@ RCT_EXPORT_MODULE()
   }
 
   NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-  NSString *file = [bundle pathForResource:@"ttisf989" ofType:@"pr.lzfse"];
+//  NSString *file = [bundle pathForResource:@"ttisf989" ofType:@"pr.lzfse"];
+  NSString *file = [bundle pathForResource:@"ttisf989" ofType:@"pr.lzma"];
 
   if (file == nil) {
     return nil;
   }
 
-  NSData *compressedData = [NSData dataWithContentsOfFile:[file stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-  NSData *scheduleData = [compressedData lam_uncompressedDataUsingCompression:LAMCompressionLZFSE];
+  NSData *compressedData = [NSData dataWithContentsOfFile:file];
+//  NSData *scheduleData = [compressedData lam_uncompressedDataUsingCompression:LAMCompressionLZFSE];
+  NSData *scheduleData = [compressedData lam_uncompressedDataUsingCompression:LAMCompressionLZMA];
 
   NSError *error = nil;
   Data *data = [Data parseFromData:scheduleData error:&error];
@@ -67,6 +69,12 @@ RCT_EXPORT_METHOD(preloadData:(RCTPromiseResolveBlock)resolve reject:(RCTPromise
   resolve(nil);
 }
 
+RCT_EXPORT_METHOD(clearCache:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+  dataCache = nil;
+  resolve(nil);
+}
+
 RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
   Data *data = [self getData];
@@ -86,21 +94,23 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
   NSArray<Data_Route *> *routes = data.routesArray;
   NSInteger routesCount = [routes count];
 
-  NSLog(@"%@", routes.lastObject);
-
   NSMutableArray *routesJson = [NSMutableArray array];
   NSMutableSet *addedRouteIds = [NSMutableSet set];
   for (NSInteger routeIndex = routesCount - 1; routeIndex >= 0; routeIndex -= 1) {
     Data_Route *route = routes[routeIndex];
 
-    if (
-        (route.operatingDays & day) &&
-        route.dateFrom <= date &&
-        route.dateTo >= date &&
-        ![addedRouteIds containsObject:route.routeId]
-    ) {
-      [addedRouteIds addObject:route.routeId];
+    BOOL validForDate =
+      route.dateFrom <= date &&
+      route.dateTo >= date &&
+      ![addedRouteIds containsObject:route.routeId];
 
+    if (validForDate) {
+      [addedRouteIds addObject:route.routeId];
+    }
+
+    BOOL validForDay = validForDate && (route.operatingDays & day);
+
+    if (validForDay) {
       NSInteger i = 0;
       NSInteger count = route.stopsArray.count;
       for (; i < count; i += 1) {
