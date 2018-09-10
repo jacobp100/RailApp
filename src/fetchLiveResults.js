@@ -69,7 +69,11 @@ const parseDepartureBoardService = (
   const routeOrigin = crcToId[originCrs];
   const routeDestination = crcToId[destinationCrs];
   const departureTimestamp = getTime(std);
-  const departurePlatform = safeString(platformString);
+  const departurePlatformName = safeString(platformString);
+  const departurePlatform =
+    departurePlatformName != null
+      ? { name: departurePlatformName, confirmed: true }
+      : null;
   if (etd === "On time") {
     return {
       serviceId,

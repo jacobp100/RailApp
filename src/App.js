@@ -37,8 +37,8 @@ export default class App extends Component {
   state = {
     from: null,
     to: null,
-    from: require("../stations.json").find(s => s.crc === "WAT").id,
-    to: require("../stations.json").find(s => s.crc === "SUR").id,
+    // from: require("../stations.json").find(s => s.crc === "WAT").id,
+    // to: require("../stations.json").find(s => s.crc === "SUR").id,
     now: TimeMonitor.now(),
     customTimestamp: null,
     search: "",

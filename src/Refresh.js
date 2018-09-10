@@ -1,5 +1,12 @@
-import React from "react";
-import { TouchableOpacity, Text, Image, StyleSheet } from "react-native";
+import React, { Component } from "react";
+import {
+  TouchableOpacity,
+  Text,
+  Image,
+  Animated,
+  Easing,
+  StyleSheet
+} from "react-native";
 import { LiveResultsConsumer, fetchStatus } from "./LiveResults";
 
 const refreshDimensions = Image.resolveAssetSource(
@@ -21,6 +28,61 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7
   }
 });
+
+class RefreshIcon extends Component {
+  rotate = new Animated.Value(0);
+
+  imageStyle = [
+    styles.image,
+    {
+      transform: [
+        {
+          rotate: this.rotate.interpolate({
+            inputRange: [0, 1],
+            outputRange: ["0deg", "360deg"]
+          })
+        }
+      ]
+    }
+  ];
+
+  beginRotation = Animated.loop(
+    Animated.timing(this.rotate, {
+      toValue: 3,
+      duration: 3000,
+      easing: Easing.inOut(Easing.poly(3)),
+      useNativeDriver: true
+    })
+  );
+
+  resetRotation = Animated.spring(this.rotate, {
+    toValue: 0,
+    useNativeDriver: true
+  });
+
+  componentDidMount() {
+    if (this.props.active) {
+      this.beginRotation.start();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!prevProps.active && this.props.active) {
+      this.beginRotation.start();
+    } else if (prevProps.active && !this.props.active) {
+      this.resetRotation.start();
+    }
+  }
+
+  render() {
+    return (
+      <Animated.Image
+        style={this.imageStyle}
+        source={require("../assets/Refresh.png")}
+      />
+    );
+  }
+}
 
 export default ({ style, now }) => (
   <LiveResultsConsumer>
@@ -59,10 +121,7 @@ export default ({ style, now }) => (
 
       return (
         <TouchableOpacity style={style} onPress={props.fetchLiveResults}>
-          <Image
-            style={styles.image}
-            source={require("../assets/Refresh.png")}
-          />
+          <RefreshIcon active={props.fetchStatus === fetchStatus.IN_PROGRESS} />
           <Text style={styles.text}>{text}</Text>
         </TouchableOpacity>
       );

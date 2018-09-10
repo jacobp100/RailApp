@@ -237,9 +237,11 @@ const Row = ({
     <View style={row.locationPlatformContainer}>
       <Text>{station}</Text>
       <Text style={row.platform}>
-        {platform
-          ? `Platform ${platform} (to be confirmed)`
-          : "No platform information"}
+        {platform == null
+          ? "No platform information"
+          : platform.confirmed
+            ? `Platform ${platform.name}`
+            : `Platform ${platform.name} (to be confirmed)`}
       </Text>
     </View>
     {attachment}

@@ -43,8 +43,8 @@ const resultFor = async (
       arrivalTime
     ),
     departureStatus: departureStatus.UNKNOWN,
-    departurePlatform,
-    arrivalPlatform,
+    departurePlatform: { name: departurePlatform, confirmed: false },
+    arrivalPlatform: { name: departurePlatform, confirmed: false },
     serviceStatus: { type: serviceStatus.OFFLINE }
   });
 

@@ -30,6 +30,15 @@ export const isDeparted = (timestamp, result) => {
 
 const isOffline = result => result.serviceStatus.type === serviceStatus.OFFLINE;
 
+const mergeNonNil = (a, b) => {
+  const out = {};
+  for (const key in b) {
+    const bValue = b[key];
+    out[key] = bValue == null ? a[key] : bValue;
+  }
+  return out;
+};
+
 const mergeData = (atocData, liveData) =>
   sortBy(
     ["departureTimestamp", "arrivalTimestamp"],
@@ -52,7 +61,9 @@ const mergeData = (atocData, liveData) =>
         timeDelta <= 60000;
 
       if (shouldMerge) {
-        return results.slice(0, -1).concat({ ...offlineResult, ...liveResult });
+        return results
+          .slice(0, -1)
+          .concat(mergeNonNil(offlineResult, liveResult));
       }
     }
 
