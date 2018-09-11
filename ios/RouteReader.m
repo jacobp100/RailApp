@@ -55,7 +55,6 @@ RCT_EXPORT_MODULE()
     [stops addObject:[self encodeStop:obj]];
   }];
   return @{
-           @"routeId": route.routeId,
            @"operatingDays": @(route.operatingDays),
            @"dateFrom": @(route.dateFrom),
            @"dateTo": @(route.dateTo),
@@ -95,17 +94,17 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
   NSInteger routesCount = [routes count];
 
   NSMutableArray *routesJson = [NSMutableArray array];
-  NSMutableSet *addedRouteIds = [NSMutableSet set];
+  NSMutableIndexSet *addedRouteIds = [NSMutableIndexSet new];
   for (NSInteger routeIndex = routesCount - 1; routeIndex >= 0; routeIndex -= 1) {
     Data_Route *route = routes[routeIndex];
 
     BOOL validForDate =
       route.dateFrom <= date &&
       route.dateTo >= date &&
-      ![addedRouteIds containsObject:route.routeId];
+      ![addedRouteIds containsIndex:route.routeId];
 
     if (validForDate) {
-      [addedRouteIds addObject:route.routeId];
+      [addedRouteIds addIndex:route.routeId];
     }
 
     BOOL validForDay = validForDate && (route.operatingDays & day);

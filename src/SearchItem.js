@@ -10,7 +10,7 @@ export default class SearchItem extends Component {
   viewStyle = {
     paddingHorizontal: 12,
     justifyContent: "center",
-    height: 28,
+    height: 32,
     backgroundColor: this.tween.interpolate({
       inputRange: [0, 1],
       outputRange: ["white", "#F2F2F2"]

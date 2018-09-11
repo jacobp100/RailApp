@@ -85,6 +85,11 @@ const emblemBase = {
   borderRadius: 5
 };
 
+const delayTitleBase = {
+  marginRight: 6,
+  fontSize: 9
+};
+
 const service = StyleSheet.create({
   container: {
     alignSelf: "flex-end",
@@ -97,16 +102,20 @@ const service = StyleSheet.create({
     ...emblemBase,
     backgroundColor: "#A3CB38"
   },
-  delayedTitleContainer: {
-    flexDirection: "row"
+  slightlyDelayedEmblem: {
+    ...emblemBase,
+    backgroundColor: "#FFC312"
+  },
+  slightlyDelayedTitle: {
+    ...delayTitleBase,
+    color: "#F79F1F"
   },
   delayedEmblem: {
     ...emblemBase,
     backgroundColor: "#EA2027"
   },
   delayedTitle: {
-    marginRight: 6,
-    fontSize: 9,
+    ...delayTitleBase,
     color: "#EA2027"
   }
 });
@@ -191,12 +200,19 @@ const ServiceStatus = props => {
       );
     case serviceStatus.DELAYED_BY: {
       const by = Math.floor(
-        (props.serviceStatus.until - props.departureTimestamp) / 6000
+        (props.serviceStatus.until - props.departureTimestamp) / (60 * 1000)
       );
+      const isSlight = by < 5;
+      const title = isSlight
+        ? service.slightlyDelayedTitle
+        : service.delayedTitle;
+      const emblem = isSlight
+        ? service.slightlyDelayedEmblem
+        : service.delayedEmblem;
       return (
         <View style={service.container}>
-          <Text style={service.delayedTitle}>{by} mins late</Text>
-          <View style={service.delayedEmblem} />
+          <Text style={title}>{by} mins late</Text>
+          <View style={emblem} />
         </View>
       );
     }

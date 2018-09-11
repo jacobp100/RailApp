@@ -18,7 +18,7 @@ export default class SearchResults extends Component {
   timeout = null;
   componentDidUpdate() {
     clearTimeout(this.timeout);
-    this.timeout = setTimeout(this.computeResults, 50);
+    this.timeout = setTimeout(this.computeResults, 150);
   }
 
   unmounted = false;
