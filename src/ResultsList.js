@@ -138,6 +138,7 @@ export default class ResultsList extends Component {
         serviceStatus={item.serviceStatus}
         departed={isDeparted(now, item)}
         separatorType={separatorType}
+        onPress={() => this.props.onPressItem(item)}
       />
     );
   };

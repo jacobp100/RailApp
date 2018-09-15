@@ -27,7 +27,7 @@ const inputMask = {
 const baseStyles = StyleSheet.create({
   container: {
     margin: 24,
-    marginTop: 36
+    marginTop: 18
   }
 });
 

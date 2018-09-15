@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { formatTimestampTime, formatDurationString } from "./util";
 import { serviceStatus } from "./resultUtil";
 
@@ -273,14 +273,10 @@ export default ({
   arrivalPlatform,
   serviceStatus,
   departed,
-  separatorType
+  separatorType,
+  onPress
 }) => (
-  <View
-    style={StyleSheet.compose(
-      styles.container,
-      departed && styles.containerInactive
-    )}
-  >
+  <View>
     {separatorType === separatorTypes.CURRENT_TIME ? (
       <View style={[separator.container, separator.currentTime]} />
     ) : separatorType === separatorTypes.DEFAULT ? (
@@ -289,31 +285,39 @@ export default ({
         <View style={separator.line} />
       </View>
     ) : null}
-    <Row
-      station={from}
-      timestamp={departureTimestamp}
-      platform={departurePlatform}
-      departed={departed}
-      serviceStatus={serviceStatus}
-      attachment={
-        <JourneyTime
-          departureTimestamp={departureTimestamp}
-          arrivalTimestamp={arrivalTimestamp}
-        />
-      }
-    />
-    <Row
-      station={to}
-      timestamp={arrivalTimestamp}
-      platform={arrivalPlatform}
-      departed={departed}
-      serviceStatus={serviceStatus}
-      attachment={
-        <ServiceStatus
-          serviceStatus={serviceStatus}
-          departureTimestamp={departureTimestamp}
-        />
-      }
-    />
+    <TouchableOpacity
+      style={StyleSheet.compose(
+        styles.container,
+        departed && styles.containerInactive
+      )}
+      onPress={onPress}
+    >
+      <Row
+        station={from}
+        timestamp={departureTimestamp}
+        platform={departurePlatform}
+        departed={departed}
+        serviceStatus={serviceStatus}
+        attachment={
+          <JourneyTime
+            departureTimestamp={departureTimestamp}
+            arrivalTimestamp={arrivalTimestamp}
+          />
+        }
+      />
+      <Row
+        station={to}
+        timestamp={arrivalTimestamp}
+        platform={arrivalPlatform}
+        departed={departed}
+        serviceStatus={serviceStatus}
+        attachment={
+          <ServiceStatus
+            serviceStatus={serviceStatus}
+            departureTimestamp={departureTimestamp}
+          />
+        }
+      />
+    </TouchableOpacity>
   </View>
 );

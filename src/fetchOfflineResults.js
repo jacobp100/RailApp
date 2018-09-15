@@ -26,25 +26,37 @@ const resultFor = async (
     endTime
   });
 
+  const formatStop = ({ stationId, arrivalTime, departureTime, platform }) => ({
+    stationId,
+    arrivalTimestamp: dateMinutesToTimestamp(date, arrivalTime),
+    departureTimestamp: dateMinutesToTimestamp(
+      departureTime >= arrivalTime ? date : date + 1,
+      departureTime
+    ),
+    platform
+  });
+
   const formatResult = ({
     routeOrigin,
     routeDestination,
     departureTime,
     arrivalTime,
     departurePlatform,
-    arrivalPlatform
+    arrivalPlatform,
+    stops
   }) => ({
     serviceId: null,
     routeOrigin,
     routeDestination,
     departureTimestamp: dateMinutesToTimestamp(date, departureTime),
     arrivalTimestamp: dateMinutesToTimestamp(
-      arrivalTime > departureTime ? date : date + 1,
+      arrivalTime >= departureTime ? date : date + 1,
       arrivalTime
     ),
-    departureStatus: departureStatus.UNKNOWN,
     departurePlatform: { name: departurePlatform, confirmed: false },
     arrivalPlatform: { name: departurePlatform, confirmed: false },
+    stops: stops.map(formatStop),
+    departureStatus: departureStatus.UNKNOWN,
     serviceStatus: { type: serviceStatus.OFFLINE }
   });
 

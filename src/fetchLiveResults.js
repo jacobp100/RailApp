@@ -81,12 +81,13 @@ const parseDepartureBoardService = (
       routeDestination,
       departureTimestamp,
       arrivalTimestamp: NaN,
+      departurePlatform,
+      arrivalPlatform: null,
+      stops: null,
       departureStatus:
         departureTimestamp <= now
           ? departureStatus.DEPARTED
           : departureStatus.NOT_DEPARTED,
-      departurePlatform,
-      arrivalPlatform: null,
       serviceStatus: { type: serviceStatus.ON_TIME }
     };
   } else if (etd === "Delayed") {
@@ -96,9 +97,10 @@ const parseDepartureBoardService = (
       routeDestination,
       departureTimestamp,
       arrivalTimestamp: NaN,
-      departureStatus: departureStatus.NOT_DEPARTED,
       departurePlatform,
       arrivalPlatform: null,
+      stops: null,
+      departureStatus: departureStatus.NOT_DEPARTED,
       serviceStatus: { type: serviceStatus.DELAYED }
     };
   } else if (etd === "Cancelled") {
@@ -108,9 +110,10 @@ const parseDepartureBoardService = (
       routeDestination,
       departureTimestamp,
       arrivalTimestamp: NaN,
-      departureStatus: departureStatus.DEPARTED,
       departurePlatform: null,
       arrivalPlatform: null,
+      stops: null,
+      departureStatus: departureStatus.DEPARTED,
       serviceStatus: { type: serviceStatus.CANCELLED }
     };
   } else if (getTime(etd) != null) {
@@ -124,12 +127,13 @@ const parseDepartureBoardService = (
       routeDestination,
       departureTimestamp,
       arrivalTimestamp: NaN,
+      departurePlatform,
+      arrivalPlatform: null,
+      stops: null,
       departureStatus:
         actualDepartureTimestamp <= now
           ? departureStatus.DEPARTED
           : departureStatus.NOT_DEPARTED,
-      departurePlatform,
-      arrivalPlatform: null,
       serviceStatus: {
         type: serviceStatus.DELAYED_BY,
         until: actualDepartureTimestamp
@@ -167,25 +171,36 @@ export const fetchLiveResults = async ({ from, to, now }) => {
   return services.map(service => parseDepartureBoardService(now, service));
 };
 
-const parseStatusService = (
+const parseStop = (
   now,
   service,
-  { "lt4:st": standardTime, "lt4:et": estimatedTime }
+  { "lt4:crs": crs, "lt4:st": standardTime, "lt4:et": estimatedTime }
 ) => {
+  let timestamp;
+
   if (estimatedTime === "On time") {
-    const arrivalTimestamp = adjustTimeIfBefore(
+    timestamp = adjustTimeIfBefore(
       service.departureTimestamp,
       getTime(standardTime)
     );
-    return { ...service, arrivalTimestamp };
   } else if (getTime(estimatedTime) != null) {
-    const arrivalTimestamp = adjustTimeIfBefore(
+    timestamp = adjustTimeIfBefore(
       service.departureTimestamp,
       getTime(estimatedTime)
     );
-    return { ...service, arrivalTimestamp };
+  } else {
+    timestamp = adjustTimeIfBefore(
+      service.departureTimestamp,
+      getTime(standardTime)
+    );
   }
-  return service;
+
+  return {
+    stationId: crcToId[crs],
+    arrivalTimestamp: timestamp,
+    departureTimestamp: timestamp,
+    platform: null
+  };
 };
 
 export const fetchLiveResult = async ({ from, to, now, service }) => {
@@ -204,15 +219,20 @@ export const fetchLiveResult = async ({ from, to, now, service }) => {
     </soap:Envelope>
   `);
 
-  let services =
+  let stops =
     tree["soap:Envelope"]["soap:Body"].GetServiceDetailsResponse
       .GetServiceDetailsResult["lt4:subsequentCallingPoints"][
       "lt4:callingPointList"
     ]["lt4:callingPoint"];
-  services = Array.isArray(services) ? services : [services];
-  const crc = idToCrc[to];
-  const arrivalService = services.find(r => r["lt4:crs"] === crc);
-  return arrivalService != null
-    ? parseStatusService(now, service, arrivalService)
-    : service;
+  stops = Array.isArray(stops) ? stops : [stops];
+  stops = stops.map(stop => parseStop(now, service, stop));
+
+  const arrivalService = stops.find(stop => stop.stationId === to);
+  if (arrivalService == null) return service;
+
+  return {
+    ...service,
+    arrivalTimestamp: arrivalService.arrivalTimestamp,
+    stops
+  };
 };

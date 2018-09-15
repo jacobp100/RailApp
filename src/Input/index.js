@@ -12,46 +12,6 @@ import stations from "../../stations.json";
 import * as inputs from "./inputs";
 import PlatformComponent from "./PlatformComponent";
 
-const baseInput = {
-  justifyContent: "center",
-  paddingHorizontal: 24,
-  height: 38,
-  marginBottom: 1,
-  backgroundColor: "black",
-  borderRadius: 3
-};
-
-const baseStyles = StyleSheet.create({
-  container: {
-    margin: 24,
-    marginTop: 36
-  }
-});
-
-const inputStyles = StyleSheet.create({
-  topInput: {
-    ...baseInput,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12
-  },
-  bottomInput: {
-    ...baseInput,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12
-  },
-  text: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "900",
-    letterSpacing: -1 / 18
-  },
-  switchPlaceholder: {
-    alignSelf: "stretch",
-    width: Image.resolveAssetSource(require("../../assets/SwitchButton.png"))
-      .width
-  }
-});
-
 export default class Input extends React.Component {
   rotate = new Animated.Value(0);
   imageStyle = {

@@ -3,9 +3,12 @@ import {
   Text,
   View,
   Image,
+  SafeAreaView,
   TouchableOpacity,
+  Modal,
   StyleSheet,
-  AppState
+  AppState,
+  AsyncStorage
 } from "react-native";
 import Input, { inputs } from "./Input";
 import TimeMonitor from "./TimeMonitor";
@@ -15,6 +18,7 @@ import EmptyList from "./EmptyList";
 import { LiveResultsProvider } from "./LiveResults";
 import ResultsList from "./ResultsList";
 import SearchResults from "./SearchResults";
+import StopsModal from "./StopsModal";
 import everyInterval from "./everyInterval";
 
 const styles = StyleSheet.create({
@@ -33,17 +37,41 @@ const styles = StyleSheet.create({
   }
 });
 
+const LAST_SEARCH_KEY = "lastSearch";
+let lastSearchQueue = Promise.resolve();
+
 export default class App extends Component {
   state = {
     from: null,
     to: null,
-    // from: require("../stations.json").find(s => s.crc === "WAT").id,
-    // to: require("../stations.json").find(s => s.crc === "SUR").id,
     now: TimeMonitor.now(),
     customTimestamp: null,
     search: "",
     activeInput: inputs.NONE
   };
+
+  stopsModal = React.createRef();
+
+  componentDidMount() {
+    lastSearchQueue = lastSearchQueue
+      .then(() => AsyncStorage.getItem(LAST_SEARCH_KEY))
+      .then(lastSearch => {
+        if (lastSearch != null) {
+          const { from, to } = JSON.parse(lastSearch);
+          this.setState({ from, to });
+        }
+      })
+      .catch(() => {});
+  }
+
+  componentDidUpdate(prevState) {
+    if (this.state.from !== prevState.from || this.state.to !== prevState.to) {
+      const { from, to } = this.state;
+      lastSearchQueue = lastSearchQueue.then(() =>
+        AsyncStorage.setItem(LAST_SEARCH_KEY, JSON.stringify({ from, to }))
+      );
+    }
+  }
 
   setNow = now => this.setState({ now });
   setDate = customTimestamp => this.setState({ customTimestamp });
@@ -62,13 +90,19 @@ export default class App extends Component {
       return null;
     });
 
+  showStopsForItem = item => {
+    if (this.stopsModal.current != null) {
+      this.stopsModal.current.show(item);
+    }
+  };
+
   render() {
     const { from, to, customTimestamp, now, activeInput, search } = this.state;
     const timestamp = customTimestamp != null ? customTimestamp : now;
     return (
       <LiveResultsProvider from={from} to={to} timestamp={timestamp} now={now}>
         <TimeMonitor onTimeChanged={this.setNow} />
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
           <Input
             from={from}
             to={to}
@@ -84,14 +118,21 @@ export default class App extends Component {
           {activeInput !== inputs.NONE ? (
             <SearchResults search={search} onSelect={this.setSearchResult} />
           ) : from != null && to != null ? (
-            <ResultsList from={from} to={to} timestamp={timestamp} now={now} />
+            <ResultsList
+              from={from}
+              to={to}
+              timestamp={timestamp}
+              now={now}
+              onPressItem={this.showStopsForItem}
+            />
           ) : (
             <EmptyList
               title="To Get Started"
               body="Fill in the ‘from’ and ‘to’ fields above to search for trains"
             />
           )}
-        </View>
+          <StopsModal ref={this.stopsModal} now={now} />
+        </SafeAreaView>
       </LiveResultsProvider>
     );
   }

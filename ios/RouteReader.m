@@ -49,16 +49,20 @@ RCT_EXPORT_MODULE()
            };
 }
 
-- (NSDictionary *)encodeRoute:(Data_Route *)route {
-  NSMutableArray *stops = [NSMutableArray array];
-  [route.stopsArray enumerateObjectsUsingBlock:^(Data_Route_Stop *obj, NSUInteger idx, BOOL *stop) {
+- (NSArray<NSDictionary *>*)encodeStops:(NSArray<Data_Route_Stop *>*)stopsArray {
+  NSMutableArray *stops = [NSMutableArray arrayWithCapacity:[stopsArray count]];
+  [stopsArray enumerateObjectsUsingBlock:^(Data_Route_Stop *obj, NSUInteger idx, BOOL *stop) {
     [stops addObject:[self encodeStop:obj]];
   }];
+  return stops;
+}
+
+- (NSDictionary *)encodeRoute:(Data_Route *)route {
   return @{
            @"operatingDays": @(route.operatingDays),
            @"dateFrom": @(route.dateFrom),
            @"dateTo": @(route.dateTo),
-           @"stops": stops,
+           @"stops": [self encodeStops:route.stopsArray],
            };
 }
 
@@ -132,6 +136,7 @@ RCT_EXPORT_METHOD(getData:(NSDictionary *)options resolve:(RCTPromiseResolveBloc
                             @"arrivalTime": @(to.arrivalTime),
                             @"departurePlatform": from.platform,
                             @"arrivalPlatform": to.platform,
+                            @"stops": [self encodeStops:route.stopsArray],
                             };
                 [routesJson addObject:json];
               }
