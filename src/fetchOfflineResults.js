@@ -33,7 +33,8 @@ const resultFor = async (
       departureTime >= arrivalTime ? date : date + 1,
       departureTime
     ),
-    platform
+    platform,
+    departureStatus: departureStatus.UNKNOWN
   });
 
   const formatResult = ({

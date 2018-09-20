@@ -1,4 +1,5 @@
 import parser from "fast-xml-parser";
+import { get, getOr } from "lodash/fp";
 import stations from "../stations.json";
 import { departureStatus, serviceStatus } from "./resultUtil";
 
@@ -48,6 +49,8 @@ const getTime = str => {
 const DAY = 24 * 60 * 60 * 1000;
 const adjustTimeIfBefore = (relativeTo, date) =>
   date < relativeTo ? date + DAY : date;
+const adjustTimeIfAfter = (relativeTo, date) =>
+  date < relativeTo ? date - DAY : date;
 
 const safeString = s => (s != null ? String(s) : null);
 
@@ -174,32 +177,32 @@ export const fetchLiveResults = async ({ from, to, now }) => {
 const parseStop = (
   now,
   service,
-  { "lt4:crs": crs, "lt4:st": standardTime, "lt4:et": estimatedTime }
+  { "lt4:crs": crs, "lt4:st": standardTime, "lt4:et": estimatedTime },
+  isAfterService = true
 ) => {
   let timestamp;
 
   if (estimatedTime === "On time") {
-    timestamp = adjustTimeIfBefore(
-      service.departureTimestamp,
-      getTime(standardTime)
-    );
+    timestamp = getTime(standardTime);
   } else if (getTime(estimatedTime) != null) {
-    timestamp = adjustTimeIfBefore(
-      service.departureTimestamp,
-      getTime(estimatedTime)
-    );
+    timestamp = getTime(estimatedTime);
   } else {
-    timestamp = adjustTimeIfBefore(
-      service.departureTimestamp,
-      getTime(standardTime)
-    );
+    timestamp = getTime(standardTime);
+  }
+
+  if (isAfterService) {
+    timestamp = adjustTimeIfBefore(service.departureTime, timestamp);
+  } else {
+    timestamp = adjustTimeIfAfter(service.departureTime, timestamp);
   }
 
   return {
     stationId: crcToId[crs],
     arrivalTimestamp: timestamp,
     departureTimestamp: timestamp,
-    platform: null
+    platform: null,
+    departureStatus:
+      timestamp <= now ? departureStatus.DEPARTED : departureStatus.NOT_DEPARTED
   };
 };
 
@@ -219,13 +222,41 @@ export const fetchLiveResult = async ({ from, to, now, service }) => {
     </soap:Envelope>
   `);
 
-  let stops =
-    tree["soap:Envelope"]["soap:Body"].GetServiceDetailsResponse
-      .GetServiceDetailsResult["lt4:subsequentCallingPoints"][
-      "lt4:callingPointList"
-    ]["lt4:callingPoint"];
-  stops = Array.isArray(stops) ? stops : [stops];
-  stops = stops.map(stop => parseStop(now, service, stop));
+  const res = get(
+    [
+      "soap:Envelope",
+      "soap:Body",
+      "GetServiceDetailsResponse",
+      "GetServiceDetailsResult"
+    ],
+    tree
+  );
+  const previousStops = getOr(
+    [],
+    ["lt4:previousCallingPoints", "lt4:callingPointList", "lt4:callingPoint"],
+    res
+  );
+  const nextStops = getOr(
+    [],
+    ["lt4:subsequentCallingPoints", "lt4:callingPointList", "lt4:callingPoint"],
+    res
+  );
+
+  const firstStop = {
+    stationId: from,
+    arrivalTimestamp: service.departureTimestamp,
+    departureTimestamp: service.departureTimestamp,
+    platform: service.departurePlatform,
+    departureStatus:
+      service.departureTimestamp <= now
+        ? departureStatus.DEPARTED
+        : departureStatus.NOT_DEPARTED
+  };
+  const stops = [].concat(
+    previousStops.map(stop => parseStop(now, service, stop, false)),
+    firstStop,
+    nextStops.map(stop => parseStop(now, service, stop, true))
+  );
 
   const arrivalService = stops.find(stop => stop.stationId === to);
   if (arrivalService == null) return service;

@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import stations from "../stations.json";
 import { formatTimestampTime } from "./util";
+import { departureStatus } from "./resultUtil";
 
 const stationStatus = {
   NOT_ARRIVED: 0,
@@ -48,29 +49,11 @@ const lozenge = StyleSheet.create({
   }
 });
 
-const Lozenge = ({ status }) => (
+const Lozenge = ({ arrived }) => (
   <View style={lozenge.container}>
-    <View
-      style={
-        status !== stationStatus.NOT_ARRIVED
-          ? lozenge.barActive
-          : lozenge.barInactive
-      }
-    />
-    <View
-      style={
-        status !== stationStatus.NOT_ARRIVED
-          ? lozenge.roundelActive
-          : lozenge.roundelInactive
-      }
-    />
-    <View
-      style={
-        status === stationStatus.DEPARTED
-          ? lozenge.barActive
-          : lozenge.barInactive
-      }
-    />
+    <View style={arrived ? lozenge.barActive : lozenge.barInactive} />
+    <View style={arrived ? lozenge.roundelActive : lozenge.roundelInactive} />
+    <View style={arrived ? lozenge.barActive : lozenge.barInactive} />
   </View>
 );
 
@@ -80,9 +63,17 @@ const stopItem = StyleSheet.create({
     alignItems: "stretch",
     paddingHorizontal: 12
   },
-  titleContainer: {
+  detailsContainer: {
+    flex: 1,
     marginLeft: 12,
     marginVertical: 4
+  },
+  titleContainer: {
+    flexDirection: "row"
+  },
+  offlineIcon: {
+    top: 5,
+    marginLeft: "auto"
   },
   time: {
     fontSize: 10,
@@ -90,34 +81,54 @@ const stopItem = StyleSheet.create({
   }
 });
 
-const StopItem = ({ now, stop }) => {
-  let status;
-  if (stop.departureTimestamp <= now) {
-    status = stationStatus.DEPARTED;
-  } else if (stop.arrivalTimestamp <= now) {
-    status = stationStatus.ARRIVED;
-  } else {
-    status = stationStatus.NOT_ARRIVED;
+const StopItem = ({ stop, arrived }) => (
+  <View style={stopItem.container}>
+    <Lozenge arrived={arrived} />
+    <View style={stopItem.detailsContainer}>
+      <View style={stopItem.titleContainer}>
+        <Text>{stations[stop.stationId].name}</Text>
+        {stop.departureStatus === departureStatus.UNKNOWN && (
+          <Image
+            style={stopItem.offlineIcon}
+            source={require("../assets/Offline.png")}
+          />
+        )}
+      </View>
+      <Text style={stopItem.time}>
+        {formatTimestampTime(stop.arrivalTimestamp)}
+      </Text>
+    </View>
+  </View>
+);
+
+const findLastIndex = (fn, array) => {
+  for (let i = array.length - 1; i >= 0; i -= 1) {
+    if (fn(array[i])) return i;
+  }
+  return -1;
+};
+
+export default ({ now, stops }) => {
+  if (stops == null) return null;
+
+  let departedIndex = findLastIndex(
+    s => s.departureStatus === departureStatus.DEPARTED,
+    stops
+  );
+  if (departedIndex === -1) {
+    departedIndex = findLastIndex(
+      s =>
+        s.departureStatus === departureStatus.UNKNOWN &&
+        s.departureTimestamp <= now,
+      stops
+    );
   }
 
   return (
-    <View style={stopItem.container}>
-      <Lozenge status={status} />
-      <View style={stopItem.titleContainer}>
-        <Text>{stations[stop.stationId].name}</Text>
-        <Text style={stopItem.time}>
-          {formatTimestampTime(stop.arrivalTimestamp)}
-        </Text>
-      </View>
-    </View>
-  );
-};
-
-export default ({ now, stops }) =>
-  stops != null ? (
     <React.Fragment>
       {stops.map((stop, index) => (
-        <StopItem key={index} stop={stop} now={now} />
+        <StopItem key={index} stop={stop} arrived={index <= departedIndex} />
       ))}
     </React.Fragment>
-  ) : null;
+  );
+};

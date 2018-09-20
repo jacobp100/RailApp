@@ -30,11 +30,25 @@ export const isDeparted = (timestamp, result) => {
 
 const isOffline = result => result.serviceStatus.type === serviceStatus.OFFLINE;
 
-const mergeNonNil = (a, b) => {
+const mergeOfflineLiveStops = (offlineStops, liveStops) => {
+  if (liveStops == null) return offlineStops;
+  if (offlineStops == null) return liveStops;
+
+  return offlineStops.map(offlineStop => {
+    const liveStop = liveStops.find(s => s.stationId === offlineStop.stationId);
+    return liveStop != null ? liveStop : offlineStop;
+  });
+};
+
+const mergeOfflineLiveResult = (offline, live) => {
   const out = {};
-  for (const key in b) {
-    const bValue = b[key];
-    out[key] = bValue == null ? a[key] : bValue;
+  for (const key in live) {
+    if (key === "stops") {
+      out.stops = mergeOfflineLiveStops(offline.stops, live.stops);
+    } else {
+      const liveValue = live[key];
+      out[key] = liveValue == null ? offline[key] : liveValue;
+    }
   }
   return out;
 };
@@ -63,7 +77,7 @@ const mergeData = (atocData, liveData) =>
       if (shouldMerge) {
         return results
           .slice(0, -1)
-          .concat(mergeNonNil(offlineResult, liveResult));
+          .concat(mergeOfflineLiveResult(offlineResult, liveResult));
       }
     }
 
