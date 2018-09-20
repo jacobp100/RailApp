@@ -264,60 +264,75 @@ const Row = ({
   </View>
 );
 
-export default ({
-  to,
-  from,
-  departureTimestamp,
-  arrivalTimestamp,
-  departurePlatform,
-  arrivalPlatform,
-  serviceStatus,
-  departed,
-  separatorType,
-  onPress
-}) => (
-  <View>
-    {separatorType === separatorTypes.CURRENT_TIME ? (
-      <View style={[separator.container, separator.currentTime]} />
-    ) : separatorType === separatorTypes.DEFAULT ? (
-      <View style={separator.container}>
-        <Text style={separator.timePlaceholder}>00:00</Text>
-        <View style={separator.line} />
-      </View>
-    ) : null}
-    <TouchableOpacity
-      style={StyleSheet.compose(
-        styles.container,
-        departed && styles.containerInactive
-      )}
-      onPress={onPress}
-    >
-      <Row
-        station={from}
-        timestamp={departureTimestamp}
-        platform={departurePlatform}
-        departed={departed}
-        serviceStatus={serviceStatus}
-        attachment={
-          <JourneyTime
-            departureTimestamp={departureTimestamp}
-            arrivalTimestamp={arrivalTimestamp}
-          />
-        }
-      />
-      <Row
-        station={to}
-        timestamp={arrivalTimestamp}
-        platform={arrivalPlatform}
-        departed={departed}
-        serviceStatus={serviceStatus}
-        attachment={
-          <ServiceStatus
+export default class ResultItem extends React.Component {
+  container = React.createRef();
+
+  onPress = () => {
+    this.container.current.measureInWindow((x, y, width, height) => {
+      const { item } = this.props;
+      const midY = y + height / 2;
+      this.props.onPress({ item, midY });
+    });
+  };
+
+  render() {
+    const {
+      to,
+      from,
+      departureTimestamp,
+      arrivalTimestamp,
+      departurePlatform,
+      arrivalPlatform,
+      serviceStatus,
+      departed,
+      separatorType
+    } = this.props;
+
+    return (
+      <View ref={this.container}>
+        {separatorType === separatorTypes.CURRENT_TIME ? (
+          <View style={[separator.container, separator.currentTime]} />
+        ) : separatorType === separatorTypes.DEFAULT ? (
+          <View style={separator.container}>
+            <Text style={separator.timePlaceholder}>00:00</Text>
+            <View style={separator.line} />
+          </View>
+        ) : null}
+        <TouchableOpacity
+          style={StyleSheet.compose(
+            styles.container,
+            departed && styles.containerInactive
+          )}
+          onPress={this.onPress}
+        >
+          <Row
+            station={from}
+            timestamp={departureTimestamp}
+            platform={departurePlatform}
+            departed={departed}
             serviceStatus={serviceStatus}
-            departureTimestamp={departureTimestamp}
+            attachment={
+              <JourneyTime
+                departureTimestamp={departureTimestamp}
+                arrivalTimestamp={arrivalTimestamp}
+              />
+            }
           />
-        }
-      />
-    </TouchableOpacity>
-  </View>
-);
+          <Row
+            station={to}
+            timestamp={arrivalTimestamp}
+            platform={arrivalPlatform}
+            departed={departed}
+            serviceStatus={serviceStatus}
+            attachment={
+              <ServiceStatus
+                serviceStatus={serviceStatus}
+                departureTimestamp={departureTimestamp}
+              />
+            }
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+}

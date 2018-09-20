@@ -5,8 +5,10 @@ import {
   Modal,
   Image,
   TouchableOpacity,
+  Animated,
   ScrollView,
-  StyleSheet
+  StyleSheet,
+  Dimensions
 } from "react-native";
 import stations from "../stations.json";
 import Stops from "./Stops";
@@ -57,10 +59,6 @@ const Header = ({ stops, onClose }) => (
 );
 
 const stopsModal = StyleSheet.create({
-  backdrop: {
-    backgroundColor: "#0008",
-    flex: 1
-  },
   container: {
     marginHorizontal: 24,
     marginVertical: 64,
@@ -75,31 +73,94 @@ const scrollIndicatorInsets = { bottom: 6 };
 export default class StopsModal extends Component {
   state = { visible: false, item: null };
 
-  show(item) {
-    this.setState({ visible: true, item });
+  containerInitialTranslateY = new Animated.Value(0);
+  containerTransition = new Animated.Value(0);
+  backdropTransition = new Animated.Value(0);
+
+  fadeIn = Animated.parallel([
+    Animated.spring(this.containerTransition, {
+      toValue: 1,
+      useNativeDriver: true
+    }),
+    Animated.timing(this.backdropTransition, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true
+    })
+  ]);
+  fadeOut = Animated.parallel([
+    Animated.timing(this.containerTransition, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true
+    }),
+    Animated.timing(this.backdropTransition, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true
+    })
+  ]);
+
+  backdropStyle = [
+    StyleSheet.absoluteFill,
+    {
+      backgroundColor: "black",
+      opacity: this.backdropTransition.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 0.5]
+      })
+    }
+  ];
+
+  containerStyle = [
+    stopsModal.container,
+    {
+      opacity: this.containerTransition,
+      transform: [
+        {
+          translateY: Animated.multiply(
+            Animated.subtract(1, this.containerTransition),
+            this.containerInitialTranslateY
+          )
+        },
+        { scaleY: this.containerTransition }
+      ]
+    }
+  ];
+
+  show({ item, midY }) {
+    const win = Dimensions.get("window");
+    const dy = midY - win.height / 2;
+    this.containerInitialTranslateY.setValue(dy);
+    this.setState({ visible: true, item }, () => {
+      this.fadeIn.start();
+    });
   }
 
-  hide = () => this.setState({ visible: false });
+  hide = () => {
+    this.fadeOut.start(() => {
+      this.setState({ visible: false });
+    });
+  };
 
   render() {
     const { item } = this.state;
     return (
-      <Modal visible={this.state.visible} transparent animationType="fade">
-        <View style={stopsModal.backdrop}>
-          <View style={stopsModal.container}>
-            {item != null && (
-              <React.Fragment>
-                <Header stops={item.stops} onClose={this.hide} />
-                <ScrollView
-                  automaticallyAdjustContentInsets={false}
-                  scrollIndicatorInsets={scrollIndicatorInsets}
-                >
-                  <Stops now={this.props.now} stops={item.stops} />
-                </ScrollView>
-              </React.Fragment>
-            )}
-          </View>
-        </View>
+      <Modal visible={this.state.visible} transparent>
+        <Animated.View style={this.backdropStyle} />
+        <Animated.View style={this.containerStyle}>
+          {item != null && (
+            <React.Fragment>
+              <Header stops={item.stops} onClose={this.hide} />
+              <ScrollView
+                automaticallyAdjustContentInsets={false}
+                scrollIndicatorInsets={scrollIndicatorInsets}
+              >
+                <Stops now={this.props.now} stops={item.stops} />
+              </ScrollView>
+            </React.Fragment>
+          )}
+        </Animated.View>
       </Modal>
     );
   }

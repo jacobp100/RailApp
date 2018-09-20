@@ -90,9 +90,9 @@ export default class App extends Component {
       return null;
     });
 
-  showStopsForItem = item => {
+  showStopsForItem = event => {
     if (this.stopsModal.current != null) {
-      this.stopsModal.current.show(item);
+      this.stopsModal.current.show(event);
     }
   };
 
