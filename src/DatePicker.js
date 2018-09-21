@@ -1,19 +1,6 @@
 import React, { Component } from "react";
-import {
-  Text,
-  View,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  AppState
-} from "react-native";
-import Input, { inputs } from "./Input";
-import EmptyList from "./EmptyList";
-import { LiveResultsProvider } from "./LiveResults";
-import ResultsList from "./ResultsList";
-import SearchResults from "./SearchResults";
+import { Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import DatePickerModal from "./DatePickerModal";
-import everyInterval from "./everyInterval";
 
 const styles = StyleSheet.create({
   pickDate: {

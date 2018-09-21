@@ -2,7 +2,6 @@ import React from "react";
 import {
   View,
   Text,
-  Image,
   TouchableWithoutFeedback,
   Animated,
   StyleSheet

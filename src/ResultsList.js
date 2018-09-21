@@ -55,7 +55,7 @@ export default class ResultsList extends Component {
       this.state.offlineResults == null &&
       this.state.placeholderOfflineResults != null
     ) {
-      const placeholderOfflineResults = this.state.placeholderOfflineResults;
+      const { placeholderOfflineResults } = this.state;
       clearTimeout(this.clearPlaceholderResultsTimeout);
       this.clearPlaceholderResultsTimeout = setTimeout(() => {
         if (this.unmounted) return;

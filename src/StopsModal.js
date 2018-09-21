@@ -16,18 +16,22 @@ import Stops from "./Stops";
 const header = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 18,
-    paddingVertical: 9,
+    alignItems: "stretch",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: "#BABABA"
   },
   text: {
     flex: 1,
+    marginLeft: 18,
+    marginVertical: 9,
     fontSize: 18,
     fontWeight: "900"
   },
-  closeContainer: {
+  closeTouchable: {
+    justifyContent: "center",
+    paddingHorizontal: 18
+  },
+  closeBackground: {
     borderRadius: 20,
     padding: 4,
     backgroundColor: "#888"
@@ -47,8 +51,8 @@ const Header = ({ stops, onClose }) => (
     ) : (
       <Text style={header.text}>Stop Information Unavailable</Text>
     )}
-    <TouchableOpacity onPress={onClose}>
-      <View style={header.closeContainer}>
+    <TouchableOpacity style={header.closeTouchable} onPress={onClose}>
+      <View style={header.closeBackground}>
         <Image
           source={require("../assets/Cancel.png")}
           style={header.closeImage}
@@ -77,29 +81,35 @@ export default class StopsModal extends Component {
   containerTransition = new Animated.Value(0);
   backdropTransition = new Animated.Value(0);
 
-  fadeIn = Animated.parallel([
-    Animated.spring(this.containerTransition, {
-      toValue: 1,
-      useNativeDriver: true
-    }),
-    Animated.timing(this.backdropTransition, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true
-    })
-  ]);
-  fadeOut = Animated.parallel([
-    Animated.timing(this.containerTransition, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true
-    }),
-    Animated.timing(this.backdropTransition, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true
-    })
-  ]);
+  fadeIn = Animated.parallel(
+    [
+      Animated.spring(this.containerTransition, {
+        toValue: 1,
+        useNativeDriver: true
+      }),
+      Animated.timing(this.backdropTransition, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true
+      })
+    ],
+    { stopTogether: false }
+  );
+  fadeOut = Animated.parallel(
+    [
+      Animated.timing(this.containerTransition, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true
+      }),
+      Animated.timing(this.backdropTransition, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true
+      })
+    ],
+    { stopTogether: false }
+  );
 
   backdropStyle = [
     StyleSheet.absoluteFill,

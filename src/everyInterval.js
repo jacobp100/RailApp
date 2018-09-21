@@ -1,8 +1,8 @@
 export default (cb, interval) => {
   let timeoutHandle = null;
 
-  let start = Date.now();
-  let startInterval = interval - (start % interval);
+  const start = Date.now();
+  const startInterval = interval - (start % interval);
   let nextTime = start + startInterval;
 
   const update = () => {

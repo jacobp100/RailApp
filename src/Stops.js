@@ -4,12 +4,6 @@ import stations from "../stations.json";
 import { formatTimestampTime } from "./util";
 import { departureStatus } from "./resultUtil";
 
-const stationStatus = {
-  NOT_ARRIVED: 0,
-  ARRIVED: 1,
-  DEPARTED: 2
-};
-
 const lozengeBase = {
   bar: {
     flex: 1,
@@ -124,6 +118,7 @@ export default ({ now, stops }) => {
     );
   }
 
+  /* eslint-disable react/no-array-index-key */
   return (
     <React.Fragment>
       {stops.map((stop, index) => (

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { getDate, monthNames } from "./util";
+import { monthNames } from "./util";
 
 const styles = StyleSheet.create({
   container: {

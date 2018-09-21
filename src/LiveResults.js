@@ -1,4 +1,4 @@
-import React, { Component, Children } from "react";
+import React, { Component } from "react";
 import { fetchLiveResults, fetchLiveResult } from "./fetchLiveResults";
 
 const LiveResultsContext = React.createContext(null);
@@ -43,7 +43,7 @@ export class LiveResultsProvider extends Component {
   queue = Promise.resolve();
   fetchLiveResults = () => {
     this.queue = this.queue.then(async () => {
-      const { to, from, timestamp, now } = this.props;
+      const { to, from, now } = this.props;
 
       if (
         to != null &&

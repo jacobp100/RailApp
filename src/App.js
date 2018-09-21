@@ -1,15 +1,5 @@
 import React, { Component } from "react";
-import {
-  Text,
-  View,
-  Image,
-  SafeAreaView,
-  TouchableOpacity,
-  Modal,
-  StyleSheet,
-  AppState,
-  AsyncStorage
-} from "react-native";
+import { View, SafeAreaView, StyleSheet, AsyncStorage } from "react-native";
 import Input, { inputs } from "./Input";
 import TimeMonitor from "./TimeMonitor";
 import DatePicker from "./DatePicker";
@@ -19,7 +9,6 @@ import { LiveResultsProvider } from "./LiveResults";
 import ResultsList from "./ResultsList";
 import SearchResults from "./SearchResults";
 import StopsModal from "./StopsModal";
-import everyInterval from "./everyInterval";
 
 const styles = StyleSheet.create({
   container: {

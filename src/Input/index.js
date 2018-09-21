@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableWithoutFeedback,
-  Animated,
-  Easing,
-  StyleSheet
-} from "react-native";
+import { Animated, Easing } from "react-native";
 import stations from "../../stations.json";
 import * as inputs from "./inputs";
 import PlatformComponent from "./PlatformComponent";

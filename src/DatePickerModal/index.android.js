@@ -3,7 +3,7 @@ import { DatePickerAndroid } from "react-native";
 
 // NOT TESTED™️
 export default class DatePickerModal extends Component {
-  open = ({ date, maximumDate }) =>
+  open = ({ date, minimumDate, maximumDate }) =>
     DatePickerAndroid.open({
       date,
       minDate: minimumDate,

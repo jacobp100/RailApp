@@ -10,6 +10,48 @@ const dayInMs = 24 * 60 * 60 * 1000;
 
 const mod = (n, m) => ((n % m) + m) % m;
 
+const sequentialTime = input => {
+  let currentDate = input.date;
+  let currentTime = dateMinutesToTimestamp(currentDate, input.startTime);
+
+  const processNextTime = time => {
+    let outputTime = dateMinutesToTimestamp(currentDate, time);
+    if (outputTime < currentTime) {
+      currentDate += 1;
+      outputTime = dateMinutesToTimestamp(currentDate, time);
+    }
+    currentTime = outputTime;
+    return outputTime;
+  };
+
+  return processNextTime;
+};
+
+const formatStops = ({ date, startTime }, stops) => {
+  const processNextTime = sequentialTime({ date, startTime });
+
+  return stops.map(({ stationId, arrivalTime, departureTime, platform }) => {
+    let arrivalTimestamp;
+    let departureTimestamp;
+    if (arrivalTime === 0 && departureTime !== 0) {
+      // Dunno why this happens for unadvertised CLJ stops
+      departureTimestamp = processNextTime(departureTime);
+      arrivalTimestamp = departureTimestamp;
+    } else {
+      arrivalTimestamp = processNextTime(arrivalTime);
+      departureTimestamp = processNextTime(departureTime);
+    }
+
+    return {
+      stationId,
+      arrivalTimestamp,
+      departureTimestamp,
+      platform,
+      departureStatus: departureStatus.UNKNOWN
+    };
+  });
+};
+
 const resultFor = async (
   startStation,
   endStation,
@@ -24,17 +66,6 @@ const resultFor = async (
     endStation,
     startTime,
     endTime
-  });
-
-  const formatStop = ({ stationId, arrivalTime, departureTime, platform }) => ({
-    stationId,
-    arrivalTimestamp: dateMinutesToTimestamp(date, arrivalTime),
-    departureTimestamp: dateMinutesToTimestamp(
-      departureTime >= arrivalTime ? date : date + 1,
-      departureTime
-    ),
-    platform,
-    departureStatus: departureStatus.UNKNOWN
   });
 
   const formatResult = ({
@@ -55,13 +86,13 @@ const resultFor = async (
       arrivalTime
     ),
     departurePlatform: { name: departurePlatform, confirmed: false },
-    arrivalPlatform: { name: departurePlatform, confirmed: false },
-    stops: stops.map(formatStop),
+    arrivalPlatform: { name: arrivalPlatform, confirmed: false },
+    stops: formatStops({ date, startTime }, stops),
     departureStatus: departureStatus.UNKNOWN,
     serviceStatus: { type: serviceStatus.OFFLINE }
   });
 
-  results = unformattedResults.map(formatResult);
+  const results = unformattedResults.map(formatResult);
 
   return { timestamp: dateObj.getTime(), data: results };
 };

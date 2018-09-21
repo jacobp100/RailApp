@@ -235,14 +235,7 @@ const ServiceStatus = props => {
   }
 };
 
-const Row = ({
-  station,
-  timestamp,
-  platform,
-  departed,
-  serviceStatus,
-  attachment
-}) => (
+const Row = ({ station, timestamp, platform, departed, attachment }) => (
   <View
     style={StyleSheet.compose(
       row.container,

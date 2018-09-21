@@ -25,6 +25,8 @@ export const isDeparted = (timestamp, result) => {
       return false;
     case departureStatus.DEPARTED:
       return true;
+    default:
+      throw new Error("Unknown departure status");
   }
 };
 

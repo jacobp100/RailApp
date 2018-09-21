@@ -1,11 +1,8 @@
-import React, { Component } from "react";
+import React from "react";
 import {
   View,
-  Text,
   Image,
-  TextInput,
   MaskedViewIOS,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   Animated,
   StyleSheet

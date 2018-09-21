@@ -1,5 +1,5 @@
 import parser from "fast-xml-parser";
-import { get, getOr } from "lodash/fp";
+import { get, getOr, castArray } from "lodash/fp";
 import stations from "../stations.json";
 import { departureStatus, serviceStatus } from "./resultUtil";
 
@@ -206,6 +206,8 @@ const parseStop = (
   };
 };
 
+const getStops = (path, res) => castArray(getOr([], path, res));
+
 export const fetchLiveResult = async ({ from, to, now, service }) => {
   const tree = await soapRequest(`
     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
@@ -231,13 +233,11 @@ export const fetchLiveResult = async ({ from, to, now, service }) => {
     ],
     tree
   );
-  const previousStops = getOr(
-    [],
+  const previousStops = getStops(
     ["lt4:previousCallingPoints", "lt4:callingPointList", "lt4:callingPoint"],
     res
   );
-  const nextStops = getOr(
-    [],
+  const nextStops = getStops(
     ["lt4:subsequentCallingPoints", "lt4:callingPointList", "lt4:callingPoint"],
     res
   );
@@ -247,10 +247,7 @@ export const fetchLiveResult = async ({ from, to, now, service }) => {
     arrivalTimestamp: service.departureTimestamp,
     departureTimestamp: service.departureTimestamp,
     platform: service.departurePlatform,
-    departureStatus:
-      service.departureTimestamp <= now
-        ? departureStatus.DEPARTED
-        : departureStatus.NOT_DEPARTED
+    departureStatus: service.departureStatus
   };
   const stops = [].concat(
     previousStops.map(stop => parseStop(now, service, stop, false)),
