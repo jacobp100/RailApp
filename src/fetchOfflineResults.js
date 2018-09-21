@@ -1,8 +1,9 @@
 import { NativeModules } from "react-native";
 import { serviceStatus, departureStatus } from "./resultUtil";
+import fixTimestamps from "./fixTimestamps";
 
 // (Hopefully) handles BST (assumg BST locale)
-const dateMinutesToTimestamp = (daysPast1Jan2018, minutes) =>
+export const dateMinutesToTimestamp = (daysPast1Jan2018, minutes) =>
   new Date(2018, 0, daysPast1Jan2018 + 1, 0, minutes).getTime();
 
 const origin = Date.UTC(2018, 0, 1);
@@ -10,46 +11,37 @@ const dayInMs = 24 * 60 * 60 * 1000;
 
 const mod = (n, m) => ((n % m) + m) % m;
 
-const sequentialTime = input => {
-  let currentDate = input.date;
-  let currentTime = dateMinutesToTimestamp(currentDate, input.startTime);
-
-  const processNextTime = time => {
-    let outputTime = dateMinutesToTimestamp(currentDate, time);
-    if (outputTime < currentTime) {
-      currentDate += 1;
-      outputTime = dateMinutesToTimestamp(currentDate, time);
-    }
-    currentTime = outputTime;
-    return outputTime;
+const formatStops = (date, routeStationId, routeDepartureTime, stops) => {
+  const relativeStation = {
+    stationId: routeStationId,
+    timestamp: dateMinutesToTimestamp(date, routeDepartureTime)
   };
-
-  return processNextTime;
-};
-
-const formatStops = ({ date, startTime }, stops) => {
-  const processNextTime = sequentialTime({ date, startTime });
-
-  return stops.map(({ stationId, arrivalTime, departureTime, platform }) => {
-    let arrivalTimestamp;
-    let departureTimestamp;
-    if (arrivalTime === 0 && departureTime !== 0) {
-      // Dunno why this happens for unadvertised CLJ stops
-      departureTimestamp = processNextTime(departureTime);
-      arrivalTimestamp = departureTimestamp;
-    } else {
-      arrivalTimestamp = processNextTime(arrivalTime);
-      departureTimestamp = processNextTime(departureTime);
-    }
-
-    return {
+  const arrivalTimestamps = fixTimestamps(
+    relativeStation,
+    stops.map(({ stationId, arrivalTime, departureTime }) => ({
       stationId,
-      arrivalTimestamp,
-      departureTimestamp,
-      platform,
-      departureStatus: departureStatus.UNKNOWN
-    };
-  });
+      timestamp:
+        arrivalTime === 0 && departureTime !== 0
+          ? dateMinutesToTimestamp(date, departureTime)
+          : dateMinutesToTimestamp(date, arrivalTime)
+    }))
+  );
+
+  const departureTimestamps = fixTimestamps(
+    relativeStation,
+    stops.map(({ stationId, departureTime }) => ({
+      stationId,
+      timestamp: dateMinutesToTimestamp(date, departureTime)
+    }))
+  );
+
+  return stops.map(({ stationId, platform }, index) => ({
+    stationId,
+    arrivalTimestamp: arrivalTimestamps[index],
+    departureTimestamp: departureTimestamps[index],
+    platform,
+    departureStatus: departureStatus.UNKNOWN
+  }));
 };
 
 const resultFor = async (
@@ -87,7 +79,7 @@ const resultFor = async (
     ),
     departurePlatform: { name: departurePlatform, confirmed: false },
     arrivalPlatform: { name: arrivalPlatform, confirmed: false },
-    stops: formatStops({ date, startTime }, stops),
+    stops: formatStops(date, startStation, departureTime, stops),
     departureStatus: departureStatus.UNKNOWN,
     serviceStatus: { type: serviceStatus.OFFLINE }
   });

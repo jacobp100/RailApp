@@ -2,6 +2,7 @@ import parser from "fast-xml-parser";
 import { get, getOr, castArray } from "lodash/fp";
 import stations from "../stations.json";
 import { departureStatus, serviceStatus } from "./resultUtil";
+import fixTimestamps from "./fixTimestamps";
 
 const idToCrc = {};
 const crcToId = {};
@@ -49,9 +50,6 @@ const getTime = str => {
 const DAY = 24 * 60 * 60 * 1000;
 const adjustTimeIfBefore = (relativeTo, date) =>
   date < relativeTo ? date + DAY : date;
-const adjustTimeIfAfter = (relativeTo, date) =>
-  date < relativeTo ? date - DAY : date;
-
 const safeString = s => (s != null ? String(s) : null);
 
 const parseDepartureBoardService = (
@@ -71,7 +69,7 @@ const parseDepartureBoardService = (
 ) => {
   const routeOrigin = crcToId[originCrs];
   const routeDestination = crcToId[destinationCrs];
-  const departureTimestamp = getTime(std);
+  const departureTimestamp = adjustTimeIfBefore(now - DAY / 2, getTime(std));
   const departurePlatformName = safeString(platformString);
   const departurePlatform =
     departurePlatformName != null
@@ -174,12 +172,11 @@ export const fetchLiveResults = async ({ from, to, now }) => {
   return services.map(service => parseDepartureBoardService(now, service));
 };
 
-const parseStop = (
-  now,
-  service,
-  { "lt4:crs": crs, "lt4:st": standardTime, "lt4:et": estimatedTime },
-  isAfterService = true
-) => {
+const basicParseStop = ({
+  "lt4:crs": crs,
+  "lt4:st": standardTime,
+  "lt4:et": estimatedTime
+}) => {
   let timestamp;
 
   if (estimatedTime === "On time") {
@@ -190,20 +187,27 @@ const parseStop = (
     timestamp = getTime(standardTime);
   }
 
-  if (isAfterService) {
-    timestamp = adjustTimeIfBefore(service.departureTime, timestamp);
-  } else {
-    timestamp = adjustTimeIfAfter(service.departureTime, timestamp);
-  }
-
   return {
     stationId: crcToId[crs],
-    arrivalTimestamp: timestamp,
-    departureTimestamp: timestamp,
-    platform: null,
-    departureStatus:
-      timestamp <= now ? departureStatus.DEPARTED : departureStatus.NOT_DEPARTED
+    timestamp
   };
+};
+
+const formatBasicStops = (now, basicDepartureStop, stops) => {
+  const fixedTimestamps = fixTimestamps(basicDepartureStop, stops);
+  return stops.map((stop, index) => {
+    const timestamp = fixedTimestamps[index];
+    return {
+      stationId: stop.stationId,
+      arrivalTimestamp: timestamp,
+      departureTimestamp: timestamp,
+      platform: null,
+      departureStatus:
+        timestamp <= now
+          ? departureStatus.DEPARTED
+          : departureStatus.NOT_DEPARTED
+    };
+  });
 };
 
 const getStops = (path, res) => castArray(getOr([], path, res));
@@ -242,18 +246,16 @@ export const fetchLiveResult = async ({ from, to, now, service }) => {
     res
   );
 
-  const firstStop = {
+  const basicDepartureStop = {
     stationId: from,
-    arrivalTimestamp: service.departureTimestamp,
-    departureTimestamp: service.departureTimestamp,
-    platform: service.departurePlatform,
-    departureStatus: service.departureStatus
+    timestamp: service.departureTimestamp
   };
-  const stops = [].concat(
-    previousStops.map(stop => parseStop(now, service, stop, false)),
-    firstStop,
-    nextStops.map(stop => parseStop(now, service, stop, true))
+  const basicStops = [].concat(
+    previousStops.map(basicParseStop),
+    basicDepartureStop,
+    nextStops.map(basicParseStop)
   );
+  const stops = formatBasicStops(now, basicDepartureStop, basicStops);
 
   const arrivalService = stops.find(stop => stop.stationId === to);
   if (arrivalService == null) return service;
