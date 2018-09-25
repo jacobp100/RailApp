@@ -1,20 +1,33 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet
+} from "react-native";
 import { formatTimestampTime, formatDurationString } from "./util";
 import { serviceStatus } from "./resultUtil";
 
-export const itemHeight = 80;
+const screenSize = Dimensions.get("screen");
+const aspectRatio =
+  Math.max(screenSize.width, screenSize.height) /
+  Math.min(screenSize.width, screenSize.height);
+// Any devices with notches
+const isTallDevice = aspectRatio > 16 / 9 + 0.1;
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    height: itemHeight,
-    justifyContent: "space-between"
+    paddingVertical: isTallDevice ? 12 : 9,
+    paddingHorizontal: 12
   },
   containerInactive: {
     // Can't put opacity here, because of separator
     backgroundColor: "#F2F2F2"
+  },
+  firstRow: {
+    marginBottom: isTallDevice ? 6 : 4
   }
 });
 
@@ -235,16 +248,17 @@ const ServiceStatus = props => {
   }
 };
 
-const Row = ({ station, timestamp, platform, departed, attachment }) => (
+const Row = ({ style, station, timestamp, platform, departed, attachment }) => (
   <View
-    style={StyleSheet.compose(
-      row.container,
-      departed && row.containerInactive
-    )}
+    style={
+      style != null || departed
+        ? [row.container, departed && row.containerInactive, style]
+        : row.container
+    }
   >
     <Time value={timestamp} departed={departed} />
     <View style={row.locationPlatformContainer}>
-      <Text>{station}</Text>
+      <Text>{station || "—"}</Text>
       <Text style={row.platform}>
         {platform == null
           ? "No platform information"
@@ -256,6 +270,16 @@ const Row = ({ station, timestamp, platform, departed, attachment }) => (
     {attachment}
   </View>
 );
+
+const Separator = ({ type }) =>
+  type === separatorTypes.CURRENT_TIME ? (
+    <View style={[separator.container, separator.currentTime]} />
+  ) : type === separatorTypes.DEFAULT ? (
+    <View style={separator.container}>
+      <Text style={separator.timePlaceholder}>00:00</Text>
+      <View style={separator.line} />
+    </View>
+  ) : null;
 
 export default class ResultItem extends React.Component {
   container = React.createRef();
@@ -283,14 +307,7 @@ export default class ResultItem extends React.Component {
 
     return (
       <View ref={this.container}>
-        {separatorType === separatorTypes.CURRENT_TIME ? (
-          <View style={[separator.container, separator.currentTime]} />
-        ) : separatorType === separatorTypes.DEFAULT ? (
-          <View style={separator.container}>
-            <Text style={separator.timePlaceholder}>00:00</Text>
-            <View style={separator.line} />
-          </View>
-        ) : null}
+        <Separator type={separatorType} />
         <TouchableOpacity
           style={StyleSheet.compose(
             styles.container,
@@ -299,6 +316,7 @@ export default class ResultItem extends React.Component {
           onPress={this.onPress}
         >
           <Row
+            style={styles.firstRow}
             station={from}
             timestamp={departureTimestamp}
             platform={departurePlatform}

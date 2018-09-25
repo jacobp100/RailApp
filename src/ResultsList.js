@@ -2,11 +2,13 @@ import React, { Component } from "react";
 import { SectionList, ActivityIndicator, StyleSheet } from "react-native";
 import stations from "../stations.json";
 import EmptyList from "./EmptyList";
-import ResultItem, { itemHeight, separatorTypes } from "./ResultItem";
+import ResultItem, { separatorTypes } from "./ResultItem";
 import ResultSectionHeader from "./ResultSectionHeader";
 import offlineResultsCache from "./offlineResultsCache";
 import { LiveResultsConsumer } from "./LiveResults";
 import { isScheduledDeparted, isDeparted, mergeResults } from "./resultUtil";
+
+const noop = () => {};
 
 const resultsList = StyleSheet.create({
   spinner: {
@@ -144,12 +146,6 @@ export default class ResultsList extends Component {
     );
   };
 
-  getItemLayout = (data, index) => ({
-    length: itemHeight,
-    offset: itemHeight * index,
-    index
-  });
-
   renderWithLiveResults = ({ liveResults }) => {
     const offlineResults =
       this.state.offlineResults || this.state.placeholderOfflineResults;
@@ -174,8 +170,8 @@ export default class ResultsList extends Component {
         keyExtractor={this.keyExtractor}
         renderSectionHeader={ResultSectionHeader}
         renderItem={this.renderItem}
-        getItemLayout={this.getItemLayout}
         initialScrollIndex={initialScrollIndex}
+        onScrollToIndexFailed={noop}
         ListEmptyComponent={NoResults}
         extraData={now}
       />
