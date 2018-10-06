@@ -2,11 +2,11 @@ import React from "react";
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   Dimensions,
   StyleSheet
 } from "react-native";
+import { ServiceStatusTitle, ServiceStatusEmblem } from "./ServiceStatus";
 import { formatTimestampTime, formatDurationString } from "./util";
 import { serviceStatus } from "./resultUtil";
 
@@ -91,45 +91,10 @@ const journeyTime = StyleSheet.create({
   }
 });
 
-const emblemBase = {
-  top: 1,
-  width: 10,
-  height: 10,
-  borderRadius: 5
-};
-
-const delayTitleBase = {
-  marginRight: 6,
-  fontSize: 9
-};
-
 const service = StyleSheet.create({
   container: {
     alignSelf: "flex-end",
     flexDirection: "row"
-  },
-  offlineIcon: {
-    marginLeft: "auto"
-  },
-  onTimeEmblem: {
-    ...emblemBase,
-    backgroundColor: "#A3CB38"
-  },
-  slightlyDelayedEmblem: {
-    ...emblemBase,
-    backgroundColor: "#FFC312"
-  },
-  slightlyDelayedTitle: {
-    ...delayTitleBase,
-    color: "#F79F1F"
-  },
-  delayedEmblem: {
-    ...emblemBase,
-    backgroundColor: "#EA2027"
-  },
-  delayedTitle: {
-    ...delayTitleBase,
-    color: "#EA2027"
   }
 });
 
@@ -194,59 +159,12 @@ const JourneyTime = ({ departureTimestamp, arrivalTimestamp }) => (
   </View>
 );
 
-const ServiceStatus = props => {
-  switch (props.serviceStatus.type) {
-    case serviceStatus.OFFLINE:
-      return (
-        <View style={service.container}>
-          <Image
-            style={service.offlineIcon}
-            source={require("../assets/Offline.png")}
-          />
-        </View>
-      );
-    case serviceStatus.ON_TIME:
-      return (
-        <View style={service.container}>
-          <View style={service.onTimeEmblem} />
-        </View>
-      );
-    case serviceStatus.DELAYED_BY: {
-      const by = Math.floor(
-        (props.serviceStatus.until - props.departureTimestamp) / (60 * 1000)
-      );
-      const isSlight = by < 5;
-      const title = isSlight
-        ? service.slightlyDelayedTitle
-        : service.delayedTitle;
-      const emblem = isSlight
-        ? service.slightlyDelayedEmblem
-        : service.delayedEmblem;
-      return (
-        <View style={service.container}>
-          <Text style={title}>{by} mins late</Text>
-          <View style={emblem} />
-        </View>
-      );
-    }
-    case serviceStatus.DELAYED:
-      return (
-        <View style={service.container}>
-          <Text style={service.delayedTitle}>Delayed</Text>
-          <View style={service.delayedEmblem} />
-        </View>
-      );
-    case serviceStatus.CANCELLED:
-      return (
-        <View style={service.container}>
-          <Text style={service.delayedTitle}>Cancelled</Text>
-          <View style={service.delayedEmblem} />
-        </View>
-      );
-    default:
-      return null;
-  }
-};
+const ServiceStatus = props => (
+  <View style={service.container}>
+    <ServiceStatusTitle {...props} />
+    <ServiceStatusEmblem {...props} />
+  </View>
+);
 
 const Row = ({ style, station, timestamp, platform, departed, attachment }) => (
   <View

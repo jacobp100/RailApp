@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import stations from "../stations.json";
 import Stops from "./Stops";
+import { ServiceStatusEmblem, delayedByProps } from "./ServiceStatus";
+import { serviceStatus } from "./resultUtil";
 
 const header = StyleSheet.create({
   container: {
@@ -62,17 +64,68 @@ const Header = ({ stops, onClose }) => (
   </View>
 );
 
+const footer = {
+  container: {
+    flexDirection: "row",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    backgroundColor: "#F2F2F2",
+    borderColor: "#BABABA",
+    paddingHorizontal: 18,
+    paddingVertical: 9
+  },
+  copy: {
+    flex: 1,
+    fontSize: 10,
+    color: "#8C8C8C",
+    marginLeft: 9
+  }
+};
+
+const FooterCopy = props => {
+  switch (props.serviceStatus.type) {
+    case serviceStatus.OFFLINE:
+      return (
+        <Text style={footer.copy}>
+          This is an offline result. This could mean you’re offline or the
+          service is too far away from the current time to check for live
+          results. Note that if there is strike action, the service is unlikely
+          to be running.
+        </Text>
+      );
+    case serviceStatus.ON_TIME:
+      return <Text style={footer.copy}>This service is on time</Text>;
+    case serviceStatus.DELAYED_BY:
+      return (
+        <Text style={footer.copy}>
+          This service is delayed by {delayedByProps(props).by} minutes
+        </Text>
+      );
+    case serviceStatus.DELAYED:
+      return <Text style={footer.copy}>This service is delayed</Text>;
+    case serviceStatus.CANCELLED:
+      return <Text style={footer.copy}>This service is cancelled</Text>;
+    default:
+      return null;
+  }
+};
+
+const Footer = props => (
+  <View style={footer.container}>
+    <ServiceStatusEmblem {...props} />
+    <FooterCopy {...props} />
+  </View>
+);
+
 const stopsModal = StyleSheet.create({
   container: {
     marginHorizontal: 24,
     marginVertical: 64,
     backgroundColor: "white",
     borderRadius: 12,
-    flex: 1
+    flex: 1,
+    overflow: "hidden"
   }
 });
-
-const scrollIndicatorInsets = { bottom: 6 };
 
 export default class StopsModal extends Component {
   state = { visible: false, item: null };
@@ -149,6 +202,8 @@ export default class StopsModal extends Component {
 
   hide = () => {
     this.fadeOut.start(() => {
+      this.containerTransition.setValue(0);
+      this.backdropTransition.setValue(0);
       this.setState({ visible: false });
     });
   };
@@ -162,12 +217,13 @@ export default class StopsModal extends Component {
           {item != null && (
             <React.Fragment>
               <Header stops={item.stops} onClose={this.hide} />
-              <ScrollView
-                automaticallyAdjustContentInsets={false}
-                scrollIndicatorInsets={scrollIndicatorInsets}
-              >
+              <ScrollView>
                 <Stops now={this.props.now} stops={item.stops} />
               </ScrollView>
+              <Footer
+                serviceStatus={item.serviceStatus}
+                departureTimestamp={item.departureTimestamp}
+              />
             </React.Fragment>
           )}
         </Animated.View>
