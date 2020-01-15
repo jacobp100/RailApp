@@ -18,7 +18,7 @@ RCT_EXPORT_MODULE()
   }
 
   NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-  NSString *file = [bundle pathForResource:@"ttisf242" ofType:@"pr.lzma"];
+  NSString *file = [bundle pathForResource:@"ttisf515" ofType:@"pr.lzma"];
 
   if (file == nil) {
     return nil;

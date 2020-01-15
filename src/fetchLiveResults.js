@@ -1,26 +1,26 @@
-import parser from "fast-xml-parser";
-import { get, getOr, castArray } from "lodash/fp";
-import stations from "../stations.json";
-import { departureStatus, serviceStatus } from "./resultUtil";
-import fixTimestamps from "./fixTimestamps";
+import parser from 'fast-xml-parser';
+import {get, getOr, castArray} from 'lodash/fp';
+import stations from '../stations.json';
+import {departureStatus, serviceStatus} from './resultUtil';
+import fixTimestamps from './fixTimestamps';
 
 const idToCrc = {};
 const crcToId = {};
-stations.forEach(({ id, crc }) => {
+stations.forEach(({id, crc}) => {
   idToCrc[id] = crc;
   crcToId[crc] = id;
 });
 
-const token = "d8e6b11e-b942-4941-b42e-f4b16d2c9239";
+const token = 'd8e6b11e-b942-4941-b42e-f4b16d2c9239';
 
 const soapRequest = async query => {
   const res = await fetch(
-    "https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb9.asmx",
+    'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb9.asmx',
     {
-      method: "POST",
-      headers: { "Content-Type": "text/xml" },
-      body: query.trim()
-    }
+      method: 'POST',
+      headers: {'Content-Type': 'text/xml'},
+      body: query.trim(),
+    },
   );
   const text = await res.text();
   const tree = parser.parse(text);
@@ -28,15 +28,15 @@ const soapRequest = async query => {
 };
 
 const getTime = str => {
-  if (str != null && str.includes(":")) {
-    const [h, m] = str.split(":");
+  if (str != null && str.includes(':')) {
+    const [h, m] = str.split(':');
     const now = new Date();
     const dateObj = new Date(
       now.getFullYear(),
       now.getMonth(),
       now.getDate(),
       Number(h),
-      Number(m)
+      Number(m),
     );
     // if (dateObj.getTime() < Date.now() + 12 * 60 * 60 * 1000) {
     //   dateObj.setDate(dateObj.getDate() + 1);
@@ -55,17 +55,17 @@ const safeString = s => (s != null ? String(s) : null);
 const parseDepartureBoardService = (
   now,
   {
-    "lt4:serviceID": serviceId,
-    "lt4:std": std,
-    "lt4:etd": etd,
-    "lt4:platform": platformString,
-    "lt5:origin": {
-      "lt4:location": { "lt4:crs": originCrs }
+    'lt4:serviceID': serviceId,
+    'lt4:std': std,
+    'lt4:etd': etd,
+    'lt4:platform': platformString,
+    'lt5:origin': {
+      'lt4:location': {'lt4:crs': originCrs},
     },
-    "lt5:destination": {
-      "lt4:location": { "lt4:crs": destinationCrs }
-    }
-  }
+    'lt5:destination': {
+      'lt4:location': {'lt4:crs': destinationCrs},
+    },
+  },
 ) => {
   const routeOrigin = crcToId[originCrs];
   const routeDestination = crcToId[destinationCrs];
@@ -73,9 +73,9 @@ const parseDepartureBoardService = (
   const departurePlatformName = safeString(platformString);
   const departurePlatform =
     departurePlatformName != null
-      ? { name: departurePlatformName, confirmed: true }
+      ? {name: departurePlatformName, confirmed: true}
       : null;
-  if (etd === "On time") {
+  if (etd === 'On time') {
     return {
       serviceId,
       routeOrigin,
@@ -89,9 +89,9 @@ const parseDepartureBoardService = (
         departureTimestamp <= now
           ? departureStatus.DEPARTED
           : departureStatus.NOT_DEPARTED,
-      serviceStatus: { type: serviceStatus.ON_TIME }
+      serviceStatus: {type: serviceStatus.ON_TIME},
     };
-  } else if (etd === "Delayed") {
+  } else if (etd === 'Delayed') {
     return {
       serviceId,
       routeOrigin,
@@ -102,9 +102,9 @@ const parseDepartureBoardService = (
       arrivalPlatform: null,
       stops: null,
       departureStatus: departureStatus.NOT_DEPARTED,
-      serviceStatus: { type: serviceStatus.DELAYED }
+      serviceStatus: {type: serviceStatus.DELAYED},
     };
-  } else if (etd === "Cancelled") {
+  } else if (etd === 'Cancelled') {
     return {
       serviceId,
       routeOrigin,
@@ -115,12 +115,12 @@ const parseDepartureBoardService = (
       arrivalPlatform: null,
       stops: null,
       departureStatus: departureStatus.DEPARTED,
-      serviceStatus: { type: serviceStatus.CANCELLED }
+      serviceStatus: {type: serviceStatus.CANCELLED},
     };
   } else if (getTime(etd) != null) {
     const actualDepartureTimestamp = adjustTimeIfBefore(
       departureTimestamp,
-      getTime(etd)
+      getTime(etd),
     );
     return {
       serviceId,
@@ -137,14 +137,14 @@ const parseDepartureBoardService = (
           : departureStatus.NOT_DEPARTED,
       serviceStatus: {
         type: serviceStatus.DELAYED_BY,
-        until: actualDepartureTimestamp
-      }
+        until: actualDepartureTimestamp,
+      },
     };
   }
   return null;
 };
 
-export const fetchLiveResults = async ({ from, to, now }) => {
+export const fetchLiveResults = async ({from, to, now}) => {
   const tree = await soapRequest(`
     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
       <soap:Header>
@@ -166,20 +166,20 @@ export const fetchLiveResults = async ({ from, to, now }) => {
   `);
 
   const services =
-    tree["soap:Envelope"]["soap:Body"].GetDepartureBoardResponse
-      .GetStationBoardResult["lt5:trainServices"]["lt5:service"];
+    tree['soap:Envelope']['soap:Body'].GetDepartureBoardResponse
+      .GetStationBoardResult['lt5:trainServices']['lt5:service'];
 
   return services.map(service => parseDepartureBoardService(now, service));
 };
 
 const basicParseStop = ({
-  "lt4:crs": crs,
-  "lt4:st": standardTime,
-  "lt4:et": estimatedTime
+  'lt4:crs': crs,
+  'lt4:st': standardTime,
+  'lt4:et': estimatedTime,
 }) => {
   let timestamp;
 
-  if (estimatedTime === "On time") {
+  if (estimatedTime === 'On time') {
     timestamp = getTime(standardTime);
   } else if (getTime(estimatedTime) != null) {
     timestamp = getTime(estimatedTime);
@@ -189,7 +189,7 @@ const basicParseStop = ({
 
   return {
     stationId: crcToId[crs],
-    timestamp
+    timestamp,
   };
 };
 
@@ -205,14 +205,14 @@ const formatBasicStops = (now, basicDepartureStop, stops) => {
       departureStatus:
         timestamp <= now
           ? departureStatus.DEPARTED
-          : departureStatus.NOT_DEPARTED
+          : departureStatus.NOT_DEPARTED,
     };
   });
 };
 
 const getStops = (path, res) => castArray(getOr([], path, res));
 
-export const fetchLiveResult = async ({ from, to, now, service }) => {
+export const fetchLiveResult = async ({from, to, now, service}) => {
   const tree = await soapRequest(`
     <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
       <soap:Header>
@@ -230,30 +230,30 @@ export const fetchLiveResult = async ({ from, to, now, service }) => {
 
   const res = get(
     [
-      "soap:Envelope",
-      "soap:Body",
-      "GetServiceDetailsResponse",
-      "GetServiceDetailsResult"
+      'soap:Envelope',
+      'soap:Body',
+      'GetServiceDetailsResponse',
+      'GetServiceDetailsResult',
     ],
-    tree
+    tree,
   );
   const previousStops = getStops(
-    ["lt4:previousCallingPoints", "lt4:callingPointList", "lt4:callingPoint"],
-    res
+    ['lt4:previousCallingPoints', 'lt4:callingPointList', 'lt4:callingPoint'],
+    res,
   );
   const nextStops = getStops(
-    ["lt4:subsequentCallingPoints", "lt4:callingPointList", "lt4:callingPoint"],
-    res
+    ['lt4:subsequentCallingPoints', 'lt4:callingPointList', 'lt4:callingPoint'],
+    res,
   );
 
   const basicDepartureStop = {
     stationId: from,
-    timestamp: service.departureTimestamp
+    timestamp: service.departureTimestamp,
   };
   const basicStops = [].concat(
     previousStops.map(basicParseStop),
     basicDepartureStop,
-    nextStops.map(basicParseStop)
+    nextStops.map(basicParseStop),
   );
   const stops = formatBasicStops(now, basicDepartureStop, basicStops);
 
@@ -263,6 +263,6 @@ export const fetchLiveResult = async ({ from, to, now, service }) => {
   return {
     ...service,
     arrivalTimestamp: arrivalService.arrivalTimestamp,
-    stops
+    stops,
   };
 };

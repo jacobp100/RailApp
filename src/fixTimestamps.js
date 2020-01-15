@@ -4,7 +4,7 @@ const sequentialTime = (startTimestamp, reversed = false) => {
   let currentTimestamp = startTimestamp;
   let delta = 0;
 
-  const processNextTime = ({ timestamp }) => {
+  const processNextTime = ({timestamp}) => {
     let outputTimestamp = timestamp + delta;
     if (!reversed && outputTimestamp < currentTimestamp) {
       delta += DAY;
@@ -21,7 +21,7 @@ const sequentialTime = (startTimestamp, reversed = false) => {
 };
 
 const fixTimestamps = (input, stops) => {
-  const { timestamp, stationId } = input;
+  const {timestamp, stationId} = input;
   const startIndex = stops.findIndex(s => s.stationId === stationId);
 
   if (startIndex === -1) return null;
@@ -35,7 +35,7 @@ const fixTimestamps = (input, stops) => {
       .map(sequentialTime(timestamp, true))
       .reverse(),
     timestamp,
-    postTimestamps.map(sequentialTime(timestamp, false))
+    postTimestamps.map(sequentialTime(timestamp, false)),
   );
 };
 

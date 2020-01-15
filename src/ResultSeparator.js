@@ -1,29 +1,29 @@
-import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import React from 'react';
+import {Text, View, StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
+    flexDirection: 'row',
     height: StyleSheet.hairlineWidth,
-    alignItems: "stretch"
+    alignItems: 'stretch',
   },
   timePlaceholder: {
     paddingLeft: 12,
     paddingRight: 9,
-    fontVariant: ["tabular-nums"],
-    opacity: 0
+    fontVariant: ['tabular-nums'],
+    opacity: 0,
   },
   line: {
     flex: 1,
-    backgroundColor: "#F2F2F2"
+    backgroundColor: '#F2F2F2',
   },
   containerCurrentTimeIndicator: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: "#286FB3"
-  }
+    backgroundColor: '#286FB3',
+  },
 });
 
-export default ({ indicatesCurrentTime, inactive }) =>
+export default ({indicatesCurrentTime, inactive}) =>
   indicatesCurrentTime ? (
     <View style={styles.containerCurrentTimeIndicator} />
   ) : inactive ? (

@@ -1,6 +1,6 @@
-import { NativeModules } from "react-native";
-import { serviceStatus, departureStatus } from "./resultUtil";
-import fixTimestamps from "./fixTimestamps";
+import {NativeModules} from 'react-native';
+import {serviceStatus, departureStatus} from './resultUtil';
+import fixTimestamps from './fixTimestamps';
 
 // (Hopefully) handles BST (assumg BST locale)
 export const dateMinutesToTimestamp = (daysPast1Jan2018, minutes) =>
@@ -14,40 +14,40 @@ const mod = (n, m) => ((n % m) + m) % m;
 const formatStops = (date, routeStationId, routeDepartureTime, stops) => {
   const relativeStation = {
     stationId: routeStationId,
-    timestamp: dateMinutesToTimestamp(date, routeDepartureTime)
+    timestamp: dateMinutesToTimestamp(date, routeDepartureTime),
   };
   const arrivalTimestamps = fixTimestamps(
     relativeStation,
-    stops.map(({ stationId, arrivalTime, departureTime }) => ({
+    stops.map(({stationId, arrivalTime, departureTime}) => ({
       stationId,
       timestamp:
         arrivalTime === 0 && departureTime !== 0
           ? dateMinutesToTimestamp(date, departureTime)
-          : dateMinutesToTimestamp(date, arrivalTime)
-    }))
+          : dateMinutesToTimestamp(date, arrivalTime),
+    })),
   );
 
   const departureTimestamps = fixTimestamps(
     relativeStation,
-    stops.map(({ stationId, departureTime }) => ({
+    stops.map(({stationId, departureTime}) => ({
       stationId,
-      timestamp: dateMinutesToTimestamp(date, departureTime)
-    }))
+      timestamp: dateMinutesToTimestamp(date, departureTime),
+    })),
   );
 
-  return stops.map(({ stationId, platform }, index) => ({
+  return stops.map(({stationId, platform}, index) => ({
     stationId,
     arrivalTimestamp: arrivalTimestamps[index],
     departureTimestamp: departureTimestamps[index],
     platform,
-    departureStatus: departureStatus.UNKNOWN
+    departureStatus: departureStatus.UNKNOWN,
   }));
 };
 
 const resultFor = async (
   startStation,
   endStation,
-  { date, startTime, endTime }
+  {date, startTime, endTime},
 ) => {
   const dateObj = new Date(2018, 0, date + 1);
   const day = (dateObj.getDay() + 6) % 7;
@@ -57,7 +57,7 @@ const resultFor = async (
     startStation,
     endStation,
     startTime,
-    endTime
+    endTime,
   });
 
   const formatResult = ({
@@ -67,7 +67,7 @@ const resultFor = async (
     arrivalTime,
     departurePlatform,
     arrivalPlatform,
-    stops
+    stops,
   }) => ({
     serviceId: null,
     routeOrigin,
@@ -75,21 +75,21 @@ const resultFor = async (
     departureTimestamp: dateMinutesToTimestamp(date, departureTime),
     arrivalTimestamp: dateMinutesToTimestamp(
       arrivalTime >= departureTime ? date : date + 1,
-      arrivalTime
+      arrivalTime,
     ),
-    departurePlatform: { name: departurePlatform, confirmed: false },
-    arrivalPlatform: { name: arrivalPlatform, confirmed: false },
+    departurePlatform: {name: departurePlatform, confirmed: false},
+    arrivalPlatform: {name: arrivalPlatform, confirmed: false},
     stops: formatStops(date, startStation, departureTime, stops),
     departureStatus: departureStatus.UNKNOWN,
-    serviceStatus: { type: serviceStatus.OFFLINE }
+    serviceStatus: {type: serviceStatus.OFFLINE},
   });
 
   const results = unformattedResults.map(formatResult);
 
-  return { timestamp: dateObj.getTime(), data: results };
+  return {timestamp: dateObj.getTime(), data: results};
 };
 
-export default async ({ from, to, timestamp }) => {
+export default async ({from, to, timestamp}) => {
   if (from == null || to == null || timestamp == null) return [];
 
   const MINUTES_BEFORE = 30;
@@ -99,7 +99,7 @@ export default async ({ from, to, timestamp }) => {
   const localizedTimestamp = Date.UTC(
     dateObj.getFullYear(),
     dateObj.getMonth(),
-    dateObj.getDate()
+    dateObj.getDate(),
   );
   const date = Math.floor((localizedTimestamp - origin) / dayInMs);
   const minutes = dateObj.getHours() * 60 + dateObj.getMinutes();
@@ -110,12 +110,12 @@ export default async ({ from, to, timestamp }) => {
   const timeFrom = mod(minutes - MINUTES_BEFORE, DAY);
   const timeTo = mod(minutes + MINUTES_AFTER, DAY);
 
-  const promiseData = Array.from({ length: dateTo - dateFrom + 1 })
+  const promiseData = Array.from({length: dateTo - dateFrom + 1})
     .map((_, i) => dateFrom + i)
     .map(date => ({
       date,
       startTime: date === dateFrom ? timeFrom : 0,
-      endTime: date === dateTo ? timeTo : DAY
+      endTime: date === dateTo ? timeTo : DAY,
     }));
 
   const promises = promiseData.map(p => resultFor(from, to, p));

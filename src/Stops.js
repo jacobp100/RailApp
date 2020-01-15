@@ -1,13 +1,13 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-import stations from "../stations.json";
-import { formatTimestampTime } from "./util";
-import { departureStatus } from "./resultUtil";
+import React from 'react';
+import {View, Text, Image, StyleSheet} from 'react-native';
+import stations from '../stations.json';
+import {formatTimestampTime} from './util';
+import {departureStatus} from './resultUtil';
 
 const lozengeBase = {
   bar: {
     flex: 1,
-    width: 4
+    width: 4,
   },
   roundel: {
     marginVertical: -2,
@@ -15,35 +15,35 @@ const lozengeBase = {
     height: 14,
     borderWidth: 4,
     borderRadius: 14,
-    zIndex: 1
-  }
+    zIndex: 1,
+  },
 };
 
-const inactiveColor = "#BABABA";
-const activeColor = "#286FB3";
+const inactiveColor = '#BABABA';
+const activeColor = '#286FB3';
 const lozenge = StyleSheet.create({
   container: {
-    alignItems: "center"
+    alignItems: 'center',
   },
   barInactive: {
     ...lozengeBase.bar,
-    backgroundColor: inactiveColor
+    backgroundColor: inactiveColor,
   },
   roundelInactive: {
     ...lozengeBase.roundel,
-    borderColor: inactiveColor
+    borderColor: inactiveColor,
   },
   barActive: {
     ...lozengeBase.bar,
-    backgroundColor: activeColor
+    backgroundColor: activeColor,
   },
   roundelActive: {
     ...lozengeBase.roundel,
-    borderColor: activeColor
-  }
+    borderColor: activeColor,
+  },
 });
 
-const Lozenge = ({ arrived }) => (
+const Lozenge = ({arrived}) => (
   <View style={lozenge.container}>
     <View style={arrived ? lozenge.barActive : lozenge.barInactive} />
     <View style={arrived ? lozenge.roundelActive : lozenge.roundelInactive} />
@@ -53,29 +53,29 @@ const Lozenge = ({ arrived }) => (
 
 const stopItem = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    paddingHorizontal: 12
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    paddingHorizontal: 12,
   },
   detailsContainer: {
     flex: 1,
     marginLeft: 12,
-    marginVertical: 4
+    marginVertical: 4,
   },
   titleContainer: {
-    flexDirection: "row"
+    flexDirection: 'row',
   },
   offlineIcon: {
     top: 5,
-    marginLeft: "auto"
+    marginLeft: 'auto',
   },
   time: {
     fontSize: 10,
-    color: inactiveColor
-  }
+    color: inactiveColor,
+  },
 });
 
-const StopItem = ({ stop, arrived }) => (
+const StopItem = ({stop, arrived}) => (
   <View style={stopItem.container}>
     <Lozenge arrived={arrived} />
     <View style={stopItem.detailsContainer}>
@@ -84,7 +84,7 @@ const StopItem = ({ stop, arrived }) => (
         {stop.departureStatus === departureStatus.UNKNOWN && (
           <Image
             style={stopItem.offlineIcon}
-            source={require("../assets/Offline.png")}
+            source={require('../assets/Offline.png')}
           />
         )}
       </View>
@@ -102,19 +102,19 @@ const findLastIndex = (fn, array) => {
   return -1;
 };
 
-export default ({ now, stops }) => {
+export default ({now, stops}) => {
   if (stops == null) return null;
 
   let departedIndex = findLastIndex(
     s => s.departureStatus === departureStatus.DEPARTED,
-    stops
+    stops,
   );
   if (departedIndex === -1) {
     departedIndex = findLastIndex(
       s =>
         s.departureStatus === departureStatus.UNKNOWN &&
         s.departureTimestamp <= now,
-      stops
+      stops,
     );
   }
 

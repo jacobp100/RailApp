@@ -1,9 +1,9 @@
-import React, { Component } from "react";
-import { TextInput } from "react-native";
+import React, {Component} from 'react';
+import {TextInput} from 'react-native';
 
 export default class Input extends Component {
   input = React.createRef();
-  state = { input: "" };
+  state = {input: ''};
 
   componentDidUpdate(prevProps) {
     if (prevProps.active && !this.props.active) {
@@ -12,12 +12,12 @@ export default class Input extends Component {
   }
 
   onChangeText = input => {
-    this.setState({ input });
+    this.setState({input});
     this.props.onChangeText(input);
   };
 
   onBlur = () => {
-    this.setState({ input: "" });
+    this.setState({input: ''});
     this.props.onBlur();
   };
 
@@ -29,7 +29,7 @@ export default class Input extends Component {
       placeholder,
       // onChangeText,
       // onBlur,
-      onFocus
+      onFocus,
     } = this.props;
 
     return (

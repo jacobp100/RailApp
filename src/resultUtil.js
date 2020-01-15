@@ -1,9 +1,9 @@
-import { sortBy } from "lodash/fp";
+import {sortBy} from 'lodash/fp';
 
 export const departureStatus = {
   UNKNOWN: 0,
   NOT_DEPARTED: 1,
-  DEPARTED: 2
+  DEPARTED: 2,
 };
 
 export const serviceStatus = {
@@ -11,7 +11,7 @@ export const serviceStatus = {
   ON_TIME: 1,
   DELAYED_BY: 2,
   DELAYED: 3,
-  CANCELLED: 4
+  CANCELLED: 4,
 };
 
 export const isScheduledDeparted = (timestamp, result) =>
@@ -26,7 +26,7 @@ export const isDeparted = (timestamp, result) => {
     case departureStatus.DEPARTED:
       return true;
     default:
-      throw new Error("Unknown departure status");
+      throw new Error('Unknown departure status');
   }
 };
 
@@ -45,7 +45,7 @@ const mergeOfflineLiveStops = (offlineStops, liveStops) => {
 const mergeOfflineLiveResult = (offline, live) => {
   const out = {};
   for (const key in live) {
-    if (key === "stops") {
+    if (key === 'stops') {
       out.stops = mergeOfflineLiveStops(offline.stops, live.stops);
     } else {
       const liveValue = live[key];
@@ -57,8 +57,8 @@ const mergeOfflineLiveResult = (offline, live) => {
 
 const mergeData = (atocData, liveData) =>
   sortBy(
-    ["departureTimestamp", "arrivalTimestamp"],
-    [].concat(atocData, liveData)
+    ['departureTimestamp', 'arrivalTimestamp'],
+    [].concat(atocData, liveData),
   ).reduce((results, result) => {
     const lastResult =
       results.length !== -1 ? results[results.length - 1] : null;
@@ -96,5 +96,5 @@ export const mergeResults = (atocSections, liveData) =>
       result.departureTimestamp < sectionEndTimestamp;
     const liveDataForDay =
       liveData != null ? liveData.filter(resultWithinSection) : [];
-    return { ...section, data: mergeData(section.data, liveDataForDay) };
+    return {...section, data: mergeData(section.data, liveDataForDay)};
   });

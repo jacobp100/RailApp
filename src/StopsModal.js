@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   View,
   Text,
@@ -8,46 +8,46 @@ import {
   Animated,
   ScrollView,
   StyleSheet,
-  Dimensions
-} from "react-native";
-import stations from "../stations.json";
-import Stops from "./Stops";
-import { ServiceStatusEmblem, delayedByProps } from "./ServiceStatus";
-import { serviceStatus } from "./resultUtil";
+  Dimensions,
+} from 'react-native';
+import stations from '../stations.json';
+import Stops from './Stops';
+import {ServiceStatusEmblem, delayedByProps} from './ServiceStatus';
+import {serviceStatus} from './resultUtil';
 
 const header = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "stretch",
+    flexDirection: 'row',
+    alignItems: 'stretch',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: "#BABABA"
+    borderColor: '#BABABA',
   },
   text: {
     flex: 1,
     marginLeft: 18,
     marginVertical: 9,
     fontSize: 18,
-    fontWeight: "900"
+    fontWeight: '900',
   },
   closeTouchable: {
-    justifyContent: "center",
-    paddingHorizontal: 18
+    justifyContent: 'center',
+    paddingHorizontal: 18,
   },
   closeBackground: {
     borderRadius: 20,
     padding: 4,
-    backgroundColor: "#888"
+    backgroundColor: '#888',
   },
   closeImage: {
-    tintColor: "white"
-  }
+    tintColor: 'white',
+  },
 });
 
-const Header = ({ stops, onClose }) => (
+const Header = ({stops, onClose}) => (
   <View style={header.container}>
     {stops != null && stops.length > 0 ? (
       <Text style={header.text}>
-        {stations[stops[0].stationId].name} to{" "}
+        {stations[stops[0].stationId].name} to{' '}
         {stations[stops[stops.length - 1].stationId].name}
       </Text>
     ) : (
@@ -56,7 +56,7 @@ const Header = ({ stops, onClose }) => (
     <TouchableOpacity style={header.closeTouchable} onPress={onClose}>
       <View style={header.closeBackground}>
         <Image
-          source={require("../assets/Cancel.png")}
+          source={require('../assets/Cancel.png')}
           style={header.closeImage}
         />
       </View>
@@ -66,19 +66,19 @@ const Header = ({ stops, onClose }) => (
 
 const footer = {
   container: {
-    flexDirection: "row",
+    flexDirection: 'row',
     borderTopWidth: StyleSheet.hairlineWidth,
-    backgroundColor: "#F2F2F2",
-    borderColor: "#BABABA",
+    backgroundColor: '#F2F2F2',
+    borderColor: '#BABABA',
     paddingHorizontal: 18,
-    paddingVertical: 9
+    paddingVertical: 9,
   },
   copy: {
     flex: 1,
     fontSize: 10,
-    color: "#8C8C8C",
-    marginLeft: 9
-  }
+    color: '#8C8C8C',
+    marginLeft: 9,
+  },
 };
 
 const FooterCopy = props => {
@@ -120,15 +120,15 @@ const stopsModal = StyleSheet.create({
   container: {
     marginHorizontal: 24,
     marginVertical: 64,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 12,
     flex: 1,
-    overflow: "hidden"
-  }
+    overflow: 'hidden',
+  },
 });
 
 export default class StopsModal extends Component {
-  state = { visible: false, item: null };
+  state = {visible: false, item: null};
 
   containerInitialTranslateY = new Animated.Value(0);
   containerTransition = new Animated.Value(0);
@@ -138,41 +138,41 @@ export default class StopsModal extends Component {
     [
       Animated.spring(this.containerTransition, {
         toValue: 1,
-        useNativeDriver: true
+        useNativeDriver: true,
       }),
       Animated.timing(this.backdropTransition, {
         toValue: 1,
         duration: 300,
-        useNativeDriver: true
-      })
+        useNativeDriver: true,
+      }),
     ],
-    { stopTogether: false }
+    {stopTogether: false},
   );
   fadeOut = Animated.parallel(
     [
       Animated.timing(this.containerTransition, {
         toValue: 0,
         duration: 200,
-        useNativeDriver: true
+        useNativeDriver: true,
       }),
       Animated.timing(this.backdropTransition, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true
-      })
+        useNativeDriver: true,
+      }),
     ],
-    { stopTogether: false }
+    {stopTogether: false},
   );
 
   backdropStyle = [
     StyleSheet.absoluteFill,
     {
-      backgroundColor: "black",
+      backgroundColor: 'black',
       opacity: this.backdropTransition.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 0.5]
-      })
-    }
+        outputRange: [0, 0.5],
+      }),
+    },
   ];
 
   containerStyle = [
@@ -183,19 +183,19 @@ export default class StopsModal extends Component {
         {
           translateY: Animated.multiply(
             Animated.subtract(1, this.containerTransition),
-            this.containerInitialTranslateY
-          )
+            this.containerInitialTranslateY,
+          ),
         },
-        { scaleY: this.containerTransition }
-      ]
-    }
+        {scaleY: this.containerTransition},
+      ],
+    },
   ];
 
-  show({ item, midY }) {
-    const win = Dimensions.get("window");
+  show({item, midY}) {
+    const win = Dimensions.get('window');
     const dy = midY - win.height / 2;
     this.containerInitialTranslateY.setValue(dy);
-    this.setState({ visible: true, item }, () => {
+    this.setState({visible: true, item}, () => {
       this.fadeIn.start();
     });
   }
@@ -204,12 +204,12 @@ export default class StopsModal extends Component {
     this.fadeOut.start(() => {
       this.containerTransition.setValue(0);
       this.backdropTransition.setValue(0);
-      this.setState({ visible: false });
+      this.setState({visible: false});
     });
   };
 
   render() {
-    const { item } = this.state;
+    const {item} = this.state;
     return (
       <Modal visible={this.state.visible} transparent>
         <Animated.View style={this.backdropStyle} />

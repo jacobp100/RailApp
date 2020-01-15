@@ -1,37 +1,37 @@
-import React, { Component } from "react";
-import { View, Button, DatePickerIOS, Modal, StyleSheet } from "react-native";
+import React, {Component} from 'react';
+import {View, Button, DatePickerIOS, Modal, StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
   bar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: "auto",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 'auto',
     paddingHorizontal: 12,
-    backgroundColor: "#E5E5E5"
+    backgroundColor: '#E5E5E5',
   },
   datePicker: {
-    backgroundColor: "white"
-  }
+    backgroundColor: 'white',
+  },
 });
 
 export default class DatePickerModal extends Component {
-  state = { visible: false, date: null };
+  state = {visible: false, date: null};
 
   res = null;
   rej = null;
-  open = ({ date, minimumDate, maximumDate }) => {
+  open = ({date, minimumDate, maximumDate}) => {
     if (this.rej != null) this.rej();
-    this.setState({ visible: true, date, minimumDate, maximumDate });
+    this.setState({visible: true, date, minimumDate, maximumDate});
     return new Promise((res, rej) => {
       this.res = res;
       this.rej = rej;
     });
   };
 
-  setDate = date => this.setState({ date });
+  setDate = date => this.setState({date});
 
   done = () => {
-    this.setState({ visible: false }, () => {
+    this.setState({visible: false}, () => {
       if (this.res != null) this.res(this.state.date);
       this.res = null;
       this.rej = null;
@@ -39,7 +39,7 @@ export default class DatePickerModal extends Component {
   };
 
   cancel = () => {
-    this.setState({ visible: false }, () => {
+    this.setState({visible: false}, () => {
       if (this.rej != null) this.rej();
       this.res = null;
       this.rej = null;
@@ -47,8 +47,8 @@ export default class DatePickerModal extends Component {
   };
 
   render() {
-    const { mode, minuteInterval } = this.props;
-    const { visible, date, maximumDate, minimumDate } = this.state;
+    const {mode, minuteInterval} = this.props;
+    const {visible, date, maximumDate, minimumDate} = this.state;
 
     return (
       <Modal transparent visible={visible} animationType="slide">

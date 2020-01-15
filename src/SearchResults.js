@@ -1,9 +1,9 @@
-import React, { Component } from "react";
-import { FlatList } from "react-native";
-import fuzzball from "fuzzball";
-import stations from "../stations.json";
-import Keyboard from "./Keyboard";
-import SearchItem from "./SearchItem";
+import React, {Component} from 'react';
+import {FlatList} from 'react-native';
+import fuzzball from 'fuzzball';
+import stations from '../stations.json';
+import Keyboard from './Keyboard';
+import SearchItem from './SearchItem';
 
 const keyExtractor = item => String(item.id);
 
@@ -13,7 +13,7 @@ const scorer = (search, choice, options) =>
     : fuzzball.WRatio(search, choice.name, options);
 
 export default class SearchResults extends Component {
-  state = { results: [] };
+  state = {results: []};
 
   timeout = null;
   componentDidUpdate() {
@@ -38,22 +38,22 @@ export default class SearchResults extends Component {
       .extract(search, stations, {
         limit: 12,
         cutoff: 50,
-        scorer
+        scorer,
       })
       .map(r => r[0]);
 
-    this.cachedResult = { search, results };
+    this.cachedResult = {search, results};
     return results;
   }
 
   computeResults = () => {
     if (this.unmounted) return;
     this.setState((state, props) => ({
-      results: this.performSearch(props.search)
+      results: this.performSearch(props.search),
     }));
   };
 
-  renderItem = ({ item }) => (
+  renderItem = ({item}) => (
     <SearchItem id={item.id} title={item.name} onPress={this.props.onSelect} />
   );
 
@@ -63,7 +63,7 @@ export default class SearchResults extends Component {
       keyExtractor={keyExtractor}
       renderItem={this.renderItem}
       automaticallyAdjustContentInsets={false}
-      contentInset={{ bottom: height }}
+      contentInset={{bottom: height}}
       keyboardShouldPersistTaps="always"
     />
   );

@@ -1,82 +1,82 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Image,
-  MaskedViewIOS,
   TouchableWithoutFeedback,
   Animated,
-  StyleSheet
-} from "react-native";
-import Layout from "./Layout";
-import Input from "./Input";
-import * as inputs from "./inputs";
+  StyleSheet,
+} from 'react-native';
+import MaskedView from '@react-native-community/masked-view';
+import Layout from './Layout';
+import Input from './Input';
+import * as inputs from './inputs';
 
 const inputLayout = {
   height: 38,
-  marginBottom: 1
+  marginBottom: 1,
 };
 
 const inputMask = {
-  backgroundColor: "black",
-  borderRadius: 3
+  backgroundColor: 'black',
+  borderRadius: 3,
 };
 
 const baseStyles = StyleSheet.create({
   container: {
     margin: 24,
-    marginTop: 18
-  }
+    marginTop: 18,
+  },
 });
 
 const maskStyles = StyleSheet.create({
   shadow: {
     shadowRadius: 12,
     shadowOpacity: 0.3,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 4 }
+    shadowColor: 'black',
+    shadowOffset: {width: 0, height: 4},
   },
   topInput: {
     ...inputLayout,
     ...inputMask,
     borderTopLeftRadius: 12,
-    borderTopRightRadius: 12
+    borderTopRightRadius: 12,
   },
   bottomInput: {
     ...inputLayout,
     ...inputMask,
     borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12
+    borderBottomRightRadius: 12,
   },
   image: {
     ...StyleSheet.absoluteFillObject,
     width: undefined,
     height: undefined,
-    margin: -24
-  }
+    margin: -24,
+  },
 });
 
 const inputStyles = StyleSheet.create({
   input: {
     ...inputLayout,
-    justifyContent: "center",
+    justifyContent: 'center',
     paddingHorizontal: 24,
-    color: "white",
+    color: 'white',
     fontSize: 18,
-    fontWeight: "900",
-    letterSpacing: -1 / 18
+    fontWeight: '900',
+    letterSpacing: -1 / 18,
   },
   switchPlaceholder: {
-    alignSelf: "stretch",
-    width: Image.resolveAssetSource(require("../../assets/SwitchButton.png"))
-      .width
-  }
+    alignSelf: 'stretch',
+    width: Image.resolveAssetSource(require('../../assets/SwitchButton.png'))
+      .width,
+  },
 });
 
 const gradients = [
-  require("../../assets/Gradient1.png"),
-  require("../../assets/Gradient2.png"),
-  require("../../assets/Gradient3.png"),
-  require("../../assets/Gradient4.png")
+  require('../../assets/Gradient1.png'),
+  require('../../assets/Gradient2.png'),
+  require('../../assets/Gradient3.png'),
+  require('../../assets/Gradient4.png'),
 ];
 
 export default ({
@@ -91,13 +91,13 @@ export default ({
   onClearActiveInput,
   onSwitchPress,
   onSwitchPressIn,
-  onSwitchPressOut
+  onSwitchPressOut,
 }) => {
   const gradient = gradients[hash % gradients.length];
 
   return (
     <View style={baseStyles.container}>
-      <MaskedViewIOS
+      <MaskedView
         style={StyleSheet.absoluteFill}
         maskElement={
           <Layout
@@ -106,15 +106,14 @@ export default ({
             bottomInput={<View style={maskStyles.bottomInput} />}
             attachment={
               <Animated.Image
-                source={require("../../assets/SwitchButton.png")}
+                source={require('../../assets/SwitchButton.png')}
                 style={imageStyle}
               />
             }
           />
-        }
-      >
+        }>
         <Image style={maskStyles.image} source={gradient} />
-      </MaskedViewIOS>
+      </MaskedView>
       <Layout
         topInput={
           <Input
@@ -142,8 +141,7 @@ export default ({
           <TouchableWithoutFeedback
             onPressIn={onSwitchPressIn}
             onPressOut={onSwitchPressOut}
-            onPress={onSwitchPress}
-          >
+            onPress={onSwitchPress}>
             <View style={inputStyles.switchPlaceholder} />
           </TouchableWithoutFeedback>
         }

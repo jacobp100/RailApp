@@ -6,8 +6,8 @@
 
 export const formatTimestampTime = timestamp => {
   const dateObj = new Date(timestamp);
-  const hours = String(dateObj.getHours()).padStart(2, "0");
-  const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+  const hours = String(dateObj.getHours()).padStart(2, '0');
+  const minutes = String(dateObj.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes}`;
 };
 
@@ -15,16 +15,16 @@ export const formatDurationString = (departureTime, arrivalTime) =>
   String(Math.ceil((arrivalTime - departureTime) / (60 * 1000)));
 
 export const monthNames = [
-  "JAN",
-  "FEB",
-  "MAR",
-  "APR",
-  "MAY",
-  "JUN",
-  "JUL",
-  "AUG",
-  "SEP",
-  "OCT",
-  "NOV",
-  "DEC"
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
 ];

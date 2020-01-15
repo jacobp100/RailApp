@@ -1,19 +1,19 @@
-import React, { Component } from "react";
-import { SectionList, ActivityIndicator, StyleSheet } from "react-native";
-import stations from "../stations.json";
-import EmptyList from "./EmptyList";
-import ResultItem, { separatorTypes } from "./ResultItem";
-import ResultSectionHeader from "./ResultSectionHeader";
-import offlineResultsCache from "./offlineResultsCache";
-import { LiveResultsConsumer } from "./LiveResults";
-import { isScheduledDeparted, isDeparted, mergeResults } from "./resultUtil";
+import React, {Component} from 'react';
+import {SectionList, ActivityIndicator, StyleSheet} from 'react-native';
+import stations from '../stations.json';
+import EmptyList from './EmptyList';
+import ResultItem, {separatorTypes} from './ResultItem';
+import ResultSectionHeader from './ResultSectionHeader';
+import offlineResultsCache from './offlineResultsCache';
+import {LiveResultsConsumer} from './LiveResults';
+import {isScheduledDeparted, isDeparted, mergeResults} from './resultUtil';
 
 const noop = () => {};
 
 const resultsList = StyleSheet.create({
   spinner: {
-    flex: 1
-  }
+    flex: 1,
+  },
 });
 
 const NoResults = () => (
@@ -24,7 +24,7 @@ const NoResults = () => (
 );
 
 const getOfflineResults = offlineResultsCache({
-  refreshThreshold: 15 * 60 * 1000
+  refreshThreshold: 15 * 60 * 1000,
 });
 
 export default class ResultsList extends Component {
@@ -37,7 +37,7 @@ export default class ResultsList extends Component {
     a spinner.
     This makes it appear quicker to the user.
     */
-  state = { offlineResults: null, placeholderOfflineResults: null };
+  state = {offlineResults: null, placeholderOfflineResults: null};
 
   componentDidMount() {
     this.fetchOfflineResultsIfNeeded();
@@ -57,39 +57,36 @@ export default class ResultsList extends Component {
       this.state.offlineResults == null &&
       this.state.placeholderOfflineResults != null
     ) {
-      const { placeholderOfflineResults } = this.state;
+      const {placeholderOfflineResults} = this.state;
       clearTimeout(this.clearPlaceholderResultsTimeout);
       this.clearPlaceholderResultsTimeout = setTimeout(() => {
         if (this.unmounted) return;
-        this.setState(
-          s =>
-            s.placeholderOfflineResults === placeholderOfflineResults
-              ? { placeholderOfflineResults: null }
-              : null
+        this.setState(s =>
+          s.placeholderOfflineResults === placeholderOfflineResults
+            ? {placeholderOfflineResults: null}
+            : null,
         );
       }, 300);
     }
   }
 
   fetchOfflineResultsIfNeeded() {
-    const { from, to, timestamp } = this.props;
+    const {from, to, timestamp} = this.props;
     try {
-      const offlineResults = getOfflineResults({ from, to, timestamp });
-      this.setState(
-        state =>
-          state.offlineResults !== offlineResults
-            ? { offlineResults, placeholderOfflineResults: null }
-            : null
+      const offlineResults = getOfflineResults({from, to, timestamp});
+      this.setState(state =>
+        state.offlineResults !== offlineResults
+          ? {offlineResults, placeholderOfflineResults: null}
+          : null,
       );
     } catch (e) {
-      if (e != null && typeof e.then === "function") {
+      if (e != null && typeof e.then === 'function') {
         e.then(offlineResults => {
           if (!this.unmounted) {
-            this.setState(
-              (state, props) =>
-                props.from === from && props.to === to
-                  ? { offlineResults, placeholderOfflineResults: null }
-                  : null
+            this.setState((state, props) =>
+              props.from === from && props.to === to
+                ? {offlineResults, placeholderOfflineResults: null}
+                : null,
             );
           }
         });
@@ -101,8 +98,8 @@ export default class ResultsList extends Component {
 
   keyExtractor = (key, index) => String(index);
 
-  renderItem = ({ item, index, section }) => {
-    const { now } = this.props;
+  renderItem = ({item, index, section}) => {
+    const {now} = this.props;
     const scheduledDeparted = isScheduledDeparted(now, item);
     const previousItem = index > 0 ? section.data[index - 1] : null;
     const previousItemDeparted =
@@ -146,7 +143,7 @@ export default class ResultsList extends Component {
     );
   };
 
-  renderWithLiveResults = ({ liveResults }) => {
+  renderWithLiveResults = ({liveResults}) => {
     const offlineResults =
       this.state.offlineResults || this.state.placeholderOfflineResults;
 
@@ -154,13 +151,13 @@ export default class ResultsList extends Component {
       return <ActivityIndicator style={resultsList.spinner} />;
     }
 
-    const { now } = this.props;
+    const {now} = this.props;
     const sections = mergeResults(offlineResults, liveResults);
     const initialScrollIndex =
       sections.length !== 0
         ? Math.max(
             sections[0].data.findIndex(d => d.departureTimestamp > now) - 1,
-            0
+            0,
           )
         : 0;
 

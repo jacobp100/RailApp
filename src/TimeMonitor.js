@@ -1,6 +1,6 @@
-import { Component } from "react";
-import { AppState } from "react-native";
-import everyInterval from "./everyInterval";
+import {Component} from 'react';
+import {AppState} from 'react-native';
+import everyInterval from './everyInterval';
 
 const MIN = 60 * 1000;
 
@@ -11,16 +11,16 @@ export default class TimeMonitor extends Component {
 
   componentDidMount() {
     this.startMonitoringTime();
-    AppState.addEventListener("change", this.handleAppStateChange);
+    AppState.addEventListener('change', this.handleAppStateChange);
   }
 
   componentWillUnmount() {
     this.stopMonitoringTime();
-    AppState.removeEventListener("change", this.handleAppStateChange);
+    AppState.removeEventListener('change', this.handleAppStateChange);
   }
 
   handleAppStateChange = nextAppState => {
-    if (nextAppState === "active") {
+    if (nextAppState === 'active') {
       this.props.onTimeChanged(TimeMonitor.now());
       this.startMonitoringTime();
     } else {
@@ -33,7 +33,7 @@ export default class TimeMonitor extends Component {
     if (this.intervalHandle == null) {
       this.intervalHandle = everyInterval(
         now => this.props.onTimeChanged(now),
-        MIN
+        MIN,
       );
     }
   }

@@ -1,32 +1,32 @@
-import React, { Component } from "react";
+import React, {Component} from 'react';
 import {
   TouchableOpacity,
   Text,
   Image,
   Animated,
   Easing,
-  StyleSheet
-} from "react-native";
-import { LiveResultsConsumer, fetchStatus } from "./LiveResults";
+  StyleSheet,
+} from 'react-native';
+import {LiveResultsConsumer, fetchStatus} from './LiveResults';
 
 const refreshDimensions = Image.resolveAssetSource(
-  require("../assets/Refresh.png")
+  require('../assets/Refresh.png'),
 );
 
 const styles = StyleSheet.create({
   image: {
-    position: "absolute",
-    top: "50%",
+    position: 'absolute',
+    top: '50%',
     right: 0,
-    marginTop: Math.floor(-refreshDimensions.height / 2)
+    marginTop: Math.floor(-refreshDimensions.height / 2),
   },
   text: {
     marginRight: refreshDimensions.width + 6,
-    color: "#BABABA",
+    color: '#BABABA',
     fontSize: 10,
-    fontWeight: "500",
-    letterSpacing: 0.7
-  }
+    fontWeight: '500',
+    letterSpacing: 0.7,
+  },
 });
 
 class RefreshIcon extends Component {
@@ -39,11 +39,11 @@ class RefreshIcon extends Component {
         {
           rotate: this.rotate.interpolate({
             inputRange: [0, 1],
-            outputRange: ["0deg", "360deg"]
-          })
-        }
-      ]
-    }
+            outputRange: ['0deg', '360deg'],
+          }),
+        },
+      ],
+    },
   ];
 
   beginRotation = Animated.loop(
@@ -51,13 +51,13 @@ class RefreshIcon extends Component {
       toValue: 3,
       duration: 3000,
       easing: Easing.inOut(Easing.poly(3)),
-      useNativeDriver: true
-    })
+      useNativeDriver: true,
+    }),
   );
 
   resetRotation = Animated.spring(this.rotate, {
     toValue: 0,
-    useNativeDriver: true
+    useNativeDriver: true,
   });
 
   componentDidMount() {
@@ -78,13 +78,13 @@ class RefreshIcon extends Component {
     return (
       <Animated.Image
         style={this.imageStyle}
-        source={require("../assets/Refresh.png")}
+        source={require('../assets/Refresh.png')}
       />
     );
   }
 }
 
-export default ({ style, now }) => (
+export default ({style, now}) => (
   <LiveResultsConsumer>
     {props => {
       if (props.fetchStatus === fetchStatus.UNAVAILABLE) return null;
@@ -96,24 +96,24 @@ export default ({ style, now }) => (
             const MIN = 60 * 1000;
             const minutesAgo = Math.max(
               Math.round((now - props.lastFetch) / MIN),
-              0
+              0,
             );
             if (minutesAgo === 0) {
-              text = "JUST NOW";
+              text = 'JUST NOW';
             } else if (minutesAgo === 1) {
-              text = "1 MIN AGO";
+              text = '1 MIN AGO';
             } else {
               text = `${minutesAgo} MINS AGO`;
             }
           } else {
-            text = "REFRESH";
+            text = 'REFRESH';
           }
           break;
         case fetchStatus.IN_PROGRESS:
-          text = "REFRESHING…";
+          text = 'REFRESHING…';
           break;
         case fetchStatus.FAILED:
-          text = "FAILED";
+          text = 'FAILED';
           break;
         default:
           return null;

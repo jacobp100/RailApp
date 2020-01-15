@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { fetchLiveResults, fetchLiveResult } from "./fetchLiveResults";
+import React, {Component} from 'react';
+import {fetchLiveResults, fetchLiveResult} from './fetchLiveResults';
 
 const LiveResultsContext = React.createContext(null);
 
@@ -7,7 +7,7 @@ export const fetchStatus = {
   NOT_FETCHING: 0,
   IN_PROGRESS: 1,
   FAILED: 2,
-  UNAVAILABLE: 3
+  UNAVAILABLE: 3,
 };
 
 const canFetchLiveResults = timestamp =>
@@ -17,7 +17,7 @@ export class LiveResultsProvider extends Component {
   state = {
     liveResults: null,
     fetchStatus: fetchStatus.NOT_FETCHING,
-    lastFetch: null
+    lastFetch: null,
   };
 
   componentDidMount() {
@@ -43,7 +43,7 @@ export class LiveResultsProvider extends Component {
   queue = Promise.resolve();
   fetchLiveResults = () => {
     this.queue = this.queue.then(async () => {
-      const { to, from, now } = this.props;
+      const {to, from, now} = this.props;
 
       if (
         to != null &&
@@ -53,11 +53,11 @@ export class LiveResultsProvider extends Component {
         try {
           this.setState({
             liveResults: null,
-            fetchStatus: fetchStatus.IN_PROGRESS
+            fetchStatus: fetchStatus.IN_PROGRESS,
           });
           let liveResults = null;
           try {
-            liveResults = await fetchLiveResults({ from, to, now });
+            liveResults = await fetchLiveResults({from, to, now});
           } catch (e) {}
 
           this.setState({
@@ -66,7 +66,7 @@ export class LiveResultsProvider extends Component {
               liveResults != null
                 ? fetchStatus.NOT_FETCHING
                 : fetchStatus.FAILED,
-            lastFetch: Date.now()
+            lastFetch: Date.now(),
           });
 
           this.enhanceLiveResults(to, from, now, liveResults);
@@ -75,7 +75,7 @@ export class LiveResultsProvider extends Component {
         this.setState({
           liveResults: null,
           fetchStatus: fetchStatus.UNAVAILABLE,
-          lastFetch: Date.now()
+          lastFetch: Date.now(),
         });
       }
     });
@@ -85,13 +85,12 @@ export class LiveResultsProvider extends Component {
   async enhanceLiveResults(to, from, now, liveResults) {
     try {
       const enhancedLiveResults = await Promise.all(
-        liveResults.map(service => fetchLiveResult({ from, to, now, service }))
+        liveResults.map(service => fetchLiveResult({from, to, now, service})),
       );
-      this.setState(
-        s =>
-          s.liveResults === liveResults
-            ? { liveResults: enhancedLiveResults }
-            : null
+      this.setState(s =>
+        s.liveResults === liveResults
+          ? {liveResults: enhancedLiveResults}
+          : null,
       );
     } catch (e) {}
   }
@@ -103,9 +102,8 @@ export class LiveResultsProvider extends Component {
           liveResults: this.state.liveResults,
           fetchStatus: this.state.fetchStatus,
           lastFetch: this.state.lastFetch,
-          fetchLiveResults: this.fetchLiveResults
-        }}
-      >
+          fetchLiveResults: this.fetchLiveResults,
+        }}>
         {this.props.children}
       </LiveResultsContext.Provider>
     );
