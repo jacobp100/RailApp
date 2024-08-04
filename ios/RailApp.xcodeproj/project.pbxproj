@@ -15,9 +15,9 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		14DE7A1BF79C40B5D485C991 /* libPods-RailAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 85E226C9D874BB2424DB364A /* libPods-RailAppTests.a */; };
 		161887A823CF9E000094C5CE /* RouteReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 161887A123CF9DFD0094C5CE /* RouteReader.m */; };
-		161887A923CF9E000094C5CE /* ttisf515.pr.lzma in Resources */ = {isa = PBXBuildFile; fileRef = 161887A323CF9DFD0094C5CE /* ttisf515.pr.lzma */; };
 		161887AA23CF9E000094C5CE /* Types.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 161887A623CF9E000094C5CE /* Types.pbobjc.m */; };
 		161887AB23CF9E000094C5CE /* NSData+LAMCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 161887A723CF9E000094C5CE /* NSData+LAMCompression.m */; };
+		16505BE02C5FDCDD00FD0470 /* ttisf.pr.lzma in Resources */ = {isa = PBXBuildFile; fileRef = 16505BDF2C5FDCDD00FD0470 /* ttisf.pr.lzma */; };
 		2D02E4BC1E0B4A80006451C7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -57,12 +57,12 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = RailApp/main.m; sourceTree = "<group>"; };
 		161887A123CF9DFD0094C5CE /* RouteReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteReader.m; sourceTree = "<group>"; };
 		161887A223CF9DFD0094C5CE /* NSData+LAMCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+LAMCompression.h"; sourceTree = "<group>"; };
-		161887A323CF9DFD0094C5CE /* ttisf515.pr.lzma */ = {isa = PBXFileReference; lastKnownFileType = file; path = ttisf515.pr.lzma; sourceTree = "<group>"; };
 		161887A423CF9DFD0094C5CE /* Types.pbobjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Types.pbobjc.h; sourceTree = "<group>"; };
 		161887A523CF9DFD0094C5CE /* RouteReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteReader.h; sourceTree = "<group>"; };
 		161887A623CF9E000094C5CE /* Types.pbobjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Types.pbobjc.m; sourceTree = "<group>"; };
 		161887A723CF9E000094C5CE /* NSData+LAMCompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+LAMCompression.m"; sourceTree = "<group>"; };
 		161887B823CF9FAE0094C5CE /* libcompression.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcompression.tbd; path = usr/lib/libcompression.tbd; sourceTree = SDKROOT; };
+		16505BDF2C5FDCDD00FD0470 /* ttisf.pr.lzma */ = {isa = PBXFileReference; lastKnownFileType = file; path = ttisf.pr.lzma; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* RailApp-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RailApp-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* RailApp-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RailApp-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3261E108088A46A631F07A7D /* libPods-RailApp-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RailApp-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -141,7 +141,7 @@
 				161887A723CF9E000094C5CE /* NSData+LAMCompression.m */,
 				161887A523CF9DFD0094C5CE /* RouteReader.h */,
 				161887A123CF9DFD0094C5CE /* RouteReader.m */,
-				161887A323CF9DFD0094C5CE /* ttisf515.pr.lzma */,
+				16505BDF2C5FDCDD00FD0470 /* ttisf.pr.lzma */,
 				161887A423CF9DFD0094C5CE /* Types.pbobjc.h */,
 				161887A623CF9E000094C5CE /* Types.pbobjc.m */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
@@ -359,8 +359,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				161887A923CF9E000094C5CE /* ttisf515.pr.lzma in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				16505BE02C5FDCDD00FD0470 /* ttisf.pr.lzma in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
