@@ -202,9 +202,10 @@ export default class StopsModal extends Component {
 
   hide = () => {
     this.fadeOut.start(() => {
-      this.containerTransition.setValue(0);
-      this.backdropTransition.setValue(0);
-      this.setState({visible: false});
+      this.setState({visible: false}, () => {
+        this.containerTransition.setValue(0);
+        this.backdropTransition.setValue(0);
+      });
     });
   };
 

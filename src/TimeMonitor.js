@@ -11,12 +11,16 @@ export default class TimeMonitor extends Component {
 
   componentDidMount() {
     this.startMonitoringTime();
-    AppState.addEventListener('change', this.handleAppStateChange);
+    const {remove} = AppState.addEventListener(
+      'change',
+      this.handleAppStateChange,
+    );
+    this.unmount = remove;
   }
 
   componentWillUnmount() {
     this.stopMonitoringTime();
-    AppState.removeEventListener('change', this.handleAppStateChange);
+    this.unmount();
   }
 
   handleAppStateChange = nextAppState => {

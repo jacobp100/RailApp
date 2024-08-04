@@ -4,8 +4,16 @@ import {Text, Animated, TouchableWithoutFeedback} from 'react-native';
 export default class SearchItem extends Component {
   tween = new Animated.Value(0);
 
-  pressIn = Animated.timing(this.tween, {toValue: 1, duration: 100});
-  pressOut = Animated.timing(this.tween, {toValue: 0, duration: 100});
+  pressIn = Animated.timing(this.tween, {
+    toValue: 1,
+    duration: 100,
+    useNativeDriver: true,
+  });
+  pressOut = Animated.timing(this.tween, {
+    toValue: 0,
+    duration: 100,
+    useNativeDriver: true,
+  });
 
   viewStyle = {
     paddingHorizontal: 12,

@@ -87,7 +87,9 @@ class RefreshIcon extends Component {
 export default ({style, now}) => (
   <LiveResultsConsumer>
     {props => {
-      if (props.fetchStatus === fetchStatus.UNAVAILABLE) return null;
+      if (props.fetchStatus === fetchStatus.UNAVAILABLE) {
+        return null;
+      }
 
       let text;
       switch (props.fetchStatus) {
